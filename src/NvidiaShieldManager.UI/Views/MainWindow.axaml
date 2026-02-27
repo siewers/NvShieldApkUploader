@@ -73,11 +73,9 @@
                 <ContentControl Content="{Binding CurrentPage}" Margin="24,16" />
             </ui:NavigationView.Content>
             <ui:NavigationView.MenuItems>
-                <ui:NavigationViewItem Content="Apps" Tag="Apps"
-                                      IsEnabled="{Binding IsDeviceConnected}" />
-                <ui:NavigationViewItem Content="Install" Tag="Install"
-                                      IsEnabled="{Binding IsDeviceConnected}" />
                 <ui:NavigationViewItem Content="System Info" Tag="SystemInfo"
+                                      IsEnabled="{Binding IsDeviceConnected}" />
+                <ui:NavigationViewItem Content="Apps" Tag="Apps"
                                       IsEnabled="{Binding IsDeviceConnected}" />
                 <ui:NavigationViewItem Content="Activity Monitor" Tag="ActivityMonitor"
                                       IsEnabled="{Binding IsDeviceConnected}" />

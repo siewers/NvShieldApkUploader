@@ -14,6 +14,9 @@
                         Command="{Binding RefreshCommand}"
                         IsEnabled="{Binding !IsBusy}"
                         Classes="accent"/>
+                <Button Content="Install APK"
+                        Name="InstallApkButton"
+                        IsEnabled="{Binding !IsBusy}"/>
                 <TextBlock Text="{Binding StatusText}"
                            VerticalAlignment="Center"/>
         </StackPanel>

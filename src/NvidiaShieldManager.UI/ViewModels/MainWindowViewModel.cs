@@ -33,7 +33,7 @@ public partial class MainWindowViewModel : ViewModelBase
         InstallPage = new InstallViewModel(_adbService);
         SystemPage = new SystemViewModel(_adbService);
         ActivityMonitorPage = new ActivityMonitorViewModel(_adbService);
-        _currentPage = AppsPage;
+        _currentPage = SystemPage;
 
         DevicePage.PropertyChanged += (_, e) =>
         {
@@ -55,6 +55,9 @@ public partial class MainWindowViewModel : ViewModelBase
 
                 _ = SystemPage.ActivateAsync();
                 _ = ActivityMonitorPage.StartAsync();
+
+                if (CurrentPage == AppsPage && AppsPage.Packages.Count == 0)
+                    AppsPage.RefreshCommand.Execute(null);
             }
             else
             {
@@ -70,10 +73,12 @@ public partial class MainWindowViewModel : ViewModelBase
         CurrentPage = tag switch
         {
             "Apps" => AppsPage,
-            "Install" => InstallPage,
             "SystemInfo" => SystemPage,
             "ActivityMonitor" => ActivityMonitorPage,
-            _ => AppsPage,
+            _ => SystemPage,
         };
+
+        if (CurrentPage == AppsPage && AppsPage.Packages.Count == 0 && IsDeviceConnected)
+            AppsPage.RefreshCommand.Execute(null);
     }
 }

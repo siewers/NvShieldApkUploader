@@ -21,6 +21,17 @@ public partial class MainWindow : Window
         InitializeComponent();
         SetNavigationIcons();
         ApplyVisualTweaks();
+
+        Closing += async (_, _) =>
+        {
+            if (DataContext is MainWindowViewModel vm)
+            {
+                vm.ActivityMonitorPage.Stop();
+
+                if (vm.IsDeviceConnected)
+                    await vm.DevicePage.DisconnectCommand.ExecuteAsync(null);
+            }
+        };
     }
 
     private void ApplyVisualTweaks()
@@ -91,7 +102,7 @@ public partial class MainWindow : Window
 
     private void SetNavigationIcons()
     {
-        var symbols = new[] { Symbol.AllApps, Symbol.Download, Symbol.Settings, Symbol.Alert };
+        var symbols = new[] { Symbol.Settings, Symbol.AllApps, Symbol.Alert };
         var items = NavView.MenuItems;
 
         for (var i = 0; i < items.Count && i < symbols.Length; i++)
@@ -138,7 +149,8 @@ public partial class MainWindow : Window
 
         var deviceView = new DeviceView
         {
-            DataContext = vm.DevicePage
+            DataContext = vm.DevicePage,
+            MinWidth = 500,
         };
 
         var dialog = new ContentDialog

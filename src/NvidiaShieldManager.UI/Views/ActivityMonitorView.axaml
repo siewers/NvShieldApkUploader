@@ -15,12 +15,12 @@
                     <TextBlock DockPanel.Dock="Top" Text="{Binding CpuUsageText}" FontSize="28" FontWeight="Bold" Margin="0,0,0,8"/>
                     <!-- macOS-style CPU stats panel -->
                     <Border DockPanel.Dock="Bottom" Margin="0,8,0,0"
-                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                            BorderBrush="#555555"
                             BorderThickness="1" CornerRadius="4">
                         <Grid ColumnDefinitions="Auto,*,Auto">
                             <!-- Left: System / User / Idle -->
                             <Border Grid.Column="0"
-                                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                                    BorderBrush="#555555"
                                     BorderThickness="0,0,1,0" Padding="12,8">
                                 <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto"
                                       RowSpacing="2" ColumnSpacing="12">
@@ -40,18 +40,22 @@
                             </Border>
                             <!-- Center: Mini CPU load chart -->
                             <Border Grid.Column="1"
-                                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                                    BorderBrush="#555555"
                                     BorderThickness="0,0,1,0" Padding="8,4">
                                 <StackPanel>
                                     <TextBlock Text="CPU LOAD" FontSize="11" FontWeight="SemiBold"
                                                HorizontalAlignment="Center" Margin="0,0,0,2"
                                                Foreground="Gray"/>
-                                    <lvc:CartesianChart Series="{Binding CpuLoadSeries}"
-                                                        XAxes="{Binding CpuLoadXAxes}"
-                                                        YAxes="{Binding CpuLoadYAxes}"
-                                                        Height="55"
-                                                        LegendPosition="Hidden"
-                                                        TooltipPosition="Hidden"/>
+                                    <Border BorderBrush="#555555"
+                                            BorderThickness="1" CornerRadius="2">
+                                        <lvc:CartesianChart Series="{Binding CpuLoadSeries}"
+                                                            XAxes="{Binding CpuLoadXAxes}"
+                                                            YAxes="{Binding CpuLoadYAxes}"
+                                                            Height="55"
+                                                            LegendPosition="Hidden"
+                                                            TooltipPosition="Hidden"
+                                                            />
+                                    </Border>
                                 </StackPanel>
                             </Border>
                             <!-- Right: Threads / Processes -->
@@ -68,15 +72,15 @@
                             </Border>
                         </Grid>
                     </Border>
-                    <Border Background="Black"
-                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                    <Border BorderBrush="#555555"
                             BorderThickness="1" CornerRadius="4" Padding="8">
                         <Grid ColumnDefinitions="*,Auto">
                             <lvc:CartesianChart Series="{Binding CpuSeries}"
                                                 XAxes="{Binding CpuXAxes}"
                                                 YAxes="{Binding CpuYAxes}"
                                                 ZoomMode="X"
-                                                LegendPosition="Hidden"/>
+                                                LegendPosition="Hidden"
+                                                />
                             <ItemsControl Grid.Column="1" ItemsSource="{Binding CpuLegend}"
                                           VerticalAlignment="Top" Margin="12,8,0,0">
                                 <ItemsControl.ItemTemplate>
@@ -106,12 +110,12 @@
                     <TextBlock DockPanel.Dock="Top" Text="{Binding MemUsageText}" FontSize="28" FontWeight="Bold" Margin="0,0,0,8"/>
                     <!-- Memory stats panel -->
                     <Border DockPanel.Dock="Bottom" Margin="0,8,0,0"
-                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                            BorderBrush="#555555"
                             BorderThickness="1" CornerRadius="4">
                         <Grid ColumnDefinitions="Auto,*,Auto">
                             <!-- Left: Physical / Used / Cached / Swap -->
                             <Border Grid.Column="0"
-                                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                                    BorderBrush="#555555"
                                     BorderThickness="0,0,1,0" Padding="12,8">
                                 <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto"
                                       RowSpacing="2" ColumnSpacing="12">
@@ -133,18 +137,22 @@
                             </Border>
                             <!-- Center: Mini memory pressure chart -->
                             <Border Grid.Column="1"
-                                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                                    BorderBrush="#555555"
                                     BorderThickness="0,0,1,0" Padding="8,4">
                                 <StackPanel>
                                     <TextBlock Text="MEMORY PRESSURE" FontSize="11" FontWeight="SemiBold"
                                                HorizontalAlignment="Center" Margin="0,0,0,2"
                                                Foreground="Gray"/>
-                                    <lvc:CartesianChart Series="{Binding MemLoadSeries}"
-                                                        XAxes="{Binding MemLoadXAxes}"
-                                                        YAxes="{Binding MemLoadYAxes}"
-                                                        Height="55"
-                                                        LegendPosition="Hidden"
-                                                        TooltipPosition="Hidden"/>
+                                    <Border BorderBrush="#555555"
+                                            BorderThickness="1" CornerRadius="2">
+                                        <lvc:CartesianChart Series="{Binding MemLoadSeries}"
+                                                            XAxes="{Binding MemLoadXAxes}"
+                                                            YAxes="{Binding MemLoadYAxes}"
+                                                            Height="55"
+                                                            LegendPosition="Hidden"
+                                                            TooltipPosition="Hidden"
+                                                            />
+                                    </Border>
                                 </StackPanel>
                             </Border>
                             <!-- Right: Free / Buffers -->
@@ -162,14 +170,14 @@
                             </Border>
                         </Grid>
                     </Border>
-                    <Border Background="Black"
-                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                    <Border BorderBrush="#555555"
                             BorderThickness="1" CornerRadius="4" Padding="8">
                         <lvc:CartesianChart Series="{Binding MemSeries}"
                                             XAxes="{Binding MemXAxes}"
                                             YAxes="{Binding MemYAxes}"
                                             Sections="{Binding MemSections}"
-                                            ZoomMode="X"/>
+                                            ZoomMode="X"
+                                            />
                     </Border>
                 </DockPanel>
             </TabItem>
@@ -178,12 +186,12 @@
                     <TextBlock DockPanel.Dock="Top" Text="{Binding DiskReadSpeedText}" FontSize="28" FontWeight="Bold" Margin="0,0,0,8"/>
                     <!-- macOS-style Disk stats panel -->
                     <Border DockPanel.Dock="Bottom" Margin="0,8,0,0"
-                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                            BorderBrush="#555555"
                             BorderThickness="1" CornerRadius="4">
                         <Grid ColumnDefinitions="Auto,*,Auto">
                             <!-- Left: Latency / Write speed from dumpsys -->
                             <Border Grid.Column="0"
-                                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                                    BorderBrush="#555555"
                                     BorderThickness="0,0,1,0" Padding="12,8">
                                 <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto"
                                       RowSpacing="2" ColumnSpacing="12">
@@ -205,19 +213,23 @@
                             </Border>
                             <!-- Center: Mini IO chart -->
                             <Border Grid.Column="1"
-                                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                                    BorderBrush="#555555"
                                     BorderThickness="0,0,1,0" Padding="8,4">
                                 <StackPanel>
                                     <TextBlock Text="IO" FontSize="11" FontWeight="SemiBold"
                                                HorizontalAlignment="Center" Margin="0,0,0,2"
                                                Foreground="Gray"/>
-                                    <lvc:CartesianChart Series="{Binding DiskLoadSeries}"
-                                                        XAxes="{Binding DiskLoadXAxes}"
-                                                        YAxes="{Binding DiskLoadYAxes}"
-                                                        Sections="{Binding DiskLoadSections}"
-                                                        Height="55"
-                                                        LegendPosition="Hidden"
-                                                        TooltipPosition="Hidden"/>
+                                    <Border BorderBrush="#555555"
+                                            BorderThickness="1" CornerRadius="2">
+                                        <lvc:CartesianChart Series="{Binding DiskLoadSeries}"
+                                                            XAxes="{Binding DiskLoadXAxes}"
+                                                            YAxes="{Binding DiskLoadYAxes}"
+                                                            Sections="{Binding DiskLoadSections}"
+                                                            Height="55"
+                                                            LegendPosition="Hidden"
+                                                            TooltipPosition="Hidden"
+                                                            />
+                                    </Border>
                                 </StackPanel>
                             </Border>
                             <!-- Right: Data read / written totals -->
@@ -242,15 +254,15 @@
                             </Border>
                         </Grid>
                     </Border>
-                    <Border Background="Black"
-                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                    <Border BorderBrush="#555555"
                             BorderThickness="1" CornerRadius="4" Padding="8">
                         <Grid ColumnDefinitions="*,Auto">
                             <lvc:CartesianChart Series="{Binding DiskSeries}"
                                                 XAxes="{Binding DiskXAxes}"
                                                 YAxes="{Binding DiskYAxes}"
                                                 ZoomMode="X"
-                                                LegendPosition="Hidden"/>
+                                                LegendPosition="Hidden"
+                                                />
                             <ItemsControl Grid.Column="1" ItemsSource="{Binding DiskLegend}"
                                           VerticalAlignment="Top" Margin="12,8,0,0">
                                 <ItemsControl.ItemTemplate>
@@ -280,12 +292,12 @@
                     <TextBlock DockPanel.Dock="Top" Text="{Binding NetInSpeedText}" FontSize="28" FontWeight="Bold" Margin="0,0,0,8"/>
                     <!-- macOS-style Network stats panel -->
                     <Border DockPanel.Dock="Bottom" Margin="0,8,0,0"
-                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                            BorderBrush="#555555"
                             BorderThickness="1" CornerRadius="4">
                         <Grid ColumnDefinitions="Auto,*,Auto">
                             <!-- Left: Packets in / out / per-sec -->
                             <Border Grid.Column="0"
-                                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                                    BorderBrush="#555555"
                                     BorderThickness="0,0,1,0" Padding="12,8">
                                 <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto,Auto"
                                       RowSpacing="2" ColumnSpacing="12">
@@ -307,19 +319,23 @@
                             </Border>
                             <!-- Center: Mini DATA chart -->
                             <Border Grid.Column="1"
-                                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                                    BorderBrush="#555555"
                                     BorderThickness="0,0,1,0" Padding="8,4">
                                 <StackPanel>
                                     <TextBlock Text="DATA" FontSize="11" FontWeight="SemiBold"
                                                HorizontalAlignment="Center" Margin="0,0,0,2"
                                                Foreground="Gray"/>
-                                    <lvc:CartesianChart Series="{Binding NetLoadSeries}"
-                                                        XAxes="{Binding NetLoadXAxes}"
-                                                        YAxes="{Binding NetLoadYAxes}"
-                                                        Sections="{Binding NetLoadSections}"
-                                                        Height="55"
-                                                        LegendPosition="Hidden"
-                                                        TooltipPosition="Hidden"/>
+                                    <Border BorderBrush="#555555"
+                                            BorderThickness="1" CornerRadius="2">
+                                        <lvc:CartesianChart Series="{Binding NetLoadSeries}"
+                                                            XAxes="{Binding NetLoadXAxes}"
+                                                            YAxes="{Binding NetLoadYAxes}"
+                                                            Sections="{Binding NetLoadSections}"
+                                                            Height="55"
+                                                            LegendPosition="Hidden"
+                                                            TooltipPosition="Hidden"
+                                                            />
+                                    </Border>
                                 </StackPanel>
                             </Border>
                             <!-- Right: Data received / sent totals + per-sec -->
@@ -344,15 +360,15 @@
                             </Border>
                         </Grid>
                     </Border>
-                    <Border Background="Black"
-                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                    <Border BorderBrush="#555555"
                             BorderThickness="1" CornerRadius="4" Padding="8">
                         <Grid ColumnDefinitions="*,Auto">
                             <lvc:CartesianChart Series="{Binding NetSeries}"
                                                 XAxes="{Binding NetXAxes}"
                                                 YAxes="{Binding NetYAxes}"
                                                 ZoomMode="X"
-                                                LegendPosition="Hidden"/>
+                                                LegendPosition="Hidden"
+                                                />
                             <ItemsControl Grid.Column="1" ItemsSource="{Binding NetLegend}"
                                           VerticalAlignment="Top" Margin="12,8,0,0">
                                 <ItemsControl.ItemTemplate>
@@ -382,12 +398,12 @@
                     <TextBlock DockPanel.Dock="Top" Text="{Binding AvgTemperatureText}" FontSize="28" FontWeight="Bold" Margin="0,0,0,8"/>
                     <!-- Thermal stats panel -->
                     <Border DockPanel.Dock="Bottom" Margin="0,8,0,0"
-                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                            BorderBrush="#555555"
                             BorderThickness="1" CornerRadius="4">
                         <Grid ColumnDefinitions="Auto,*,Auto">
                             <!-- Left: Avg / Min / Max -->
                             <Border Grid.Column="0"
-                                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                                    BorderBrush="#555555"
                                     BorderThickness="0,0,1,0" Padding="12,8">
                                 <Grid ColumnDefinitions="Auto,Auto" RowDefinitions="Auto,Auto,Auto"
                                       RowSpacing="2" ColumnSpacing="12">
@@ -407,18 +423,22 @@
                             </Border>
                             <!-- Center: Mini thermal chart -->
                             <Border Grid.Column="1"
-                                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                                    BorderBrush="#555555"
                                     BorderThickness="0,0,1,0" Padding="8,4">
                                 <StackPanel>
                                     <TextBlock Text="TEMPERATURE" FontSize="11" FontWeight="SemiBold"
                                                HorizontalAlignment="Center" Margin="0,0,0,2"
                                                Foreground="Gray"/>
-                                    <lvc:CartesianChart Series="{Binding ThermalLoadSeries}"
-                                                        XAxes="{Binding ThermalLoadXAxes}"
-                                                        YAxes="{Binding ThermalLoadYAxes}"
-                                                        Height="55"
-                                                        LegendPosition="Hidden"
-                                                        TooltipPosition="Hidden"/>
+                                    <Border BorderBrush="#555555"
+                                            BorderThickness="1" CornerRadius="2">
+                                        <lvc:CartesianChart Series="{Binding ThermalLoadSeries}"
+                                                            XAxes="{Binding ThermalLoadXAxes}"
+                                                            YAxes="{Binding ThermalLoadYAxes}"
+                                                            Height="55"
+                                                            LegendPosition="Hidden"
+                                                            TooltipPosition="Hidden"
+                                                            />
+                                    </Border>
                                 </StackPanel>
                             </Border>
                             <!-- Right: Hottest zone / Zone count / Fan -->
@@ -439,15 +459,15 @@
                             </Border>
                         </Grid>
                     </Border>
-                    <Border Background="Black"
-                            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
+                    <Border BorderBrush="#555555"
                             BorderThickness="1" CornerRadius="4" Padding="8">
                         <Grid ColumnDefinitions="*,Auto">
                             <lvc:CartesianChart Series="{Binding ThermalSeries}"
                                                 XAxes="{Binding ThermalXAxes}"
                                                 YAxes="{Binding ThermalYAxes}"
                                                 ZoomMode="X"
-                                                LegendPosition="Hidden"/>
+                                                LegendPosition="Hidden"
+                                                />
                             <ItemsControl Grid.Column="1" ItemsSource="{Binding ThermalLegend}"
                                           VerticalAlignment="Top" Margin="12,8,0,0">
                                 <ItemsControl.ItemTemplate>
