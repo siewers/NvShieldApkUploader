@@ -12,10 +12,10 @@ public partial class MainWindowViewModel : ViewModelBase
     private ViewModelBase _currentPage;
 
     [ObservableProperty]
-    private int _selectedNavIndex;
+    private bool _isDeviceConnected;
 
     [ObservableProperty]
-    private bool _isDeviceConnected;
+    private string _windowTitle = "Nvidia Shield Manager";
 
     public DeviceViewModel DevicePage { get; }
     public AppsViewModel AppsPage { get; }
@@ -41,25 +41,32 @@ public partial class MainWindowViewModel : ViewModelBase
 
             if (DevicePage.IsConnected)
             {
+                var name = DevicePage.ConnectedDeviceName;
+                var ip = DevicePage.IpAddress;
+                WindowTitle = string.IsNullOrEmpty(name)
+                    ? $"Nvidia Shield Manager — {ip}"
+                    : $"Nvidia Shield Manager — {name} ({ip})";
+
                 _ = SystemPage.ActivateAsync();
                 _ = ActivityMonitorPage.StartAsync();
             }
             else
             {
+                WindowTitle = "Nvidia Shield Manager";
                 ActivityMonitorPage.Stop();
             }
         };
     }
 
-    partial void OnSelectedNavIndexChanged(int value)
+    public void NavigateTo(string tag)
     {
-        CurrentPage = value switch
+        CurrentPage = tag switch
         {
-            0 => DevicePage,
-            1 => AppsPage,
-            2 => InstallPage,
-            3 => SystemPage,
-            4 => ActivityMonitorPage,
+            "Device" => DevicePage,
+            "Apps" => AppsPage,
+            "Install" => InstallPage,
+            "SystemInfo" => SystemPage,
+            "ActivityMonitor" => ActivityMonitorPage,
             _ => DevicePage,
         };
     }

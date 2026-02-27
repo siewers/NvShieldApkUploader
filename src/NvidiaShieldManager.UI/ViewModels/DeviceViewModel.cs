@@ -22,6 +22,9 @@ public partial class DeviceViewModel : ViewModelBase
     private bool _isConnected;
 
     [ObservableProperty]
+    private string _connectedDeviceName = string.Empty;
+
+    [ObservableProperty]
     private bool _isBusy;
 
     [ObservableProperty]
@@ -29,13 +32,15 @@ public partial class DeviceViewModel : ViewModelBase
 
     public ObservableCollection<ShieldDevice> ConnectedDevices { get; } = [];
     public ObservableCollection<SavedDevice> SavedDevices { get; } = [];
-    public ObservableCollection<DiscoveredDevice> DiscoveredDevices { get; } = [];
+    public ObservableCollection<DeviceSuggestion> DeviceSuggestions { get; } = [];
 
     public DeviceViewModel(AdbService adbService, SettingsService settingsService)
     {
         _adbService = adbService;
         _settingsService = settingsService;
         LoadSavedDevices();
+        RefreshSuggestions();
+        _ = ScanForSuggestionsAsync();
     }
 
     private void LoadSavedDevices()
@@ -66,8 +71,10 @@ public partial class DeviceViewModel : ViewModelBase
             await RefreshDevicesAsync();
 
             var device = ConnectedDevices.FirstOrDefault(d => d.IpAddress.StartsWith(IpAddress));
+            ConnectedDeviceName = device?.DeviceName ?? "";
             _settingsService.AddOrUpdateDevice(IpAddress, device?.DeviceName);
             LoadSavedDevices();
+            RefreshSuggestions();
         }
         else
         {
@@ -92,36 +99,52 @@ public partial class DeviceViewModel : ViewModelBase
         LoadSavedDevices();
     }
 
-    [RelayCommand]
-    private async Task ScanNetworkAsync()
+    private void RefreshSuggestions()
+    {
+        DeviceSuggestions.Clear();
+        foreach (var saved in _settingsService.SavedDevices.OrderByDescending(d => d.LastConnected))
+        {
+            DeviceSuggestions.Add(new DeviceSuggestion
+            {
+                IpAddress = saved.IpAddress,
+                DisplayName = saved.DeviceName,
+                Source = "Saved"
+            });
+        }
+    }
+
+    private async Task ScanForSuggestionsAsync()
     {
         IsScanning = true;
-        StatusText = "Scanning network for devices...";
-        DiscoveredDevices.Clear();
-
         try
         {
             var devices = await _discoveryService.ScanAsync();
+            var existingIps = DeviceSuggestions.Select(s => s.IpAddress).ToHashSet();
             foreach (var device in devices)
-                DiscoveredDevices.Add(device);
-
-            StatusText = devices.Count > 0
-                ? $"Found {devices.Count} device(s)"
-                : "No devices found on network";
+            {
+                if (!existingIps.Contains(device.IpAddress))
+                {
+                    DeviceSuggestions.Add(new DeviceSuggestion
+                    {
+                        IpAddress = device.IpAddress,
+                        DisplayName = device.DisplayName,
+                        Source = "Discovered"
+                    });
+                }
+            }
         }
-        catch (Exception ex)
+        catch
         {
-            StatusText = $"Scan failed: {ex.Message}";
+            // Scan failure is non-critical for suggestions
         }
-
         IsScanning = false;
     }
 
     [RelayCommand]
-    private async Task ConnectToDiscoveredAsync(DiscoveredDevice device)
+    private async Task RescanAsync()
     {
-        IpAddress = device.IpAddress;
-        await ConnectAsync();
+        RefreshSuggestions();
+        await ScanForSuggestionsAsync();
     }
 
     [RelayCommand]
@@ -130,6 +153,7 @@ public partial class DeviceViewModel : ViewModelBase
         IsBusy = true;
         await _adbService.DisconnectAllAsync();
         IsConnected = false;
+        ConnectedDeviceName = string.Empty;
         StatusText = "Disconnected";
         ConnectedDevices.Clear();
         IsBusy = false;

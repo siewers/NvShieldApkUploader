@@ -1,7 +1,9 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
+using Avalonia.Platform;
 using System.Linq;
 using Avalonia.Markup.Xaml;
 using NvidiaShieldManager.UI.ViewModels;
@@ -23,13 +25,95 @@ public partial class App : Application
             // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
             // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
             DisableAvaloniaDataAnnotationValidation();
-            desktop.MainWindow = new MainWindow
+            var window = new MainWindow
             {
                 DataContext = new MainWindowViewModel(),
             };
+
+            using var iconStream = AssetLoader.Open(new Uri("avares://NvidiaShieldManager/Assets/app-icon.png"));
+            window.Icon = new WindowIcon(iconStream);
+
+            desktop.MainWindow = window;
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private void AboutMenuItem_Click(object? sender, EventArgs e)
+    {
+        if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop
+            && desktop.MainWindow is not null)
+        {
+            var dialog = new Window
+            {
+                Title = "About Nvidia Shield Manager",
+                Width = 360,
+                Height = 300,
+                CanResize = false,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Content = new StackPanel
+                {
+                    Spacing = 6,
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                    VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                    Margin = new Thickness(24),
+                    Children =
+                    {
+                        new Image
+                        {
+                            Source = new Avalonia.Media.Imaging.Bitmap(
+                                AssetLoader.Open(new Uri("avares://NvidiaShieldManager/Assets/app-icon.png"))),
+                            Width = 72,
+                            Height = 72,
+                            Margin = new Thickness(0, 0, 0, 8),
+                        },
+                        new TextBlock
+                        {
+                            Text = "Nvidia Shield Manager",
+                            FontSize = 18,
+                            FontWeight = Avalonia.Media.FontWeight.SemiBold,
+                            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                        },
+                        new TextBlock
+                        {
+                            Text = "Version 1.0.0",
+                            FontSize = 13,
+                            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                            Foreground = Avalonia.Media.Brushes.Gray,
+                        },
+                        new TextBlock
+                        {
+                            Text = "Monitoring and app management\nfor your Nvidia Shield",
+                            FontSize = 12,
+                            TextAlignment = Avalonia.Media.TextAlignment.Center,
+                            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                            Foreground = Avalonia.Media.Brushes.Gray,
+                            Margin = new Thickness(0, 8, 0, 0),
+                        },
+                        new Separator
+                        {
+                            Margin = new Thickness(0, 8),
+                        },
+                        new TextBlock
+                        {
+                            Text = "\u00a9 2026 Siewers Software. All rights reserved.",
+                            FontSize = 11,
+                            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                            Foreground = Avalonia.Media.Brushes.Gray,
+                        },
+                        new TextBlock
+                        {
+                            Text = "Built with Avalonia UI",
+                            FontSize = 10,
+                            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+                            Foreground = Avalonia.Media.Brushes.DarkGray,
+                            Margin = new Thickness(0, 4, 0, 0),
+                        },
+                    }
+                }
+            };
+            dialog.ShowDialog(desktop.MainWindow);
+        }
     }
 
     private void DisableAvaloniaDataAnnotationValidation()
