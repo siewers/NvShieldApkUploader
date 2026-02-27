@@ -1,9 +1,9 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using FluentAvalonia.UI.Controls;
-using NvidiaShieldManager.UI.ViewModels;
+using ShieldCommand.UI.ViewModels;
 
-namespace NvidiaShieldManager.UI.Views;
+namespace ShieldCommand.UI.Views;
 
 public partial class AppsView : UserControl
 {

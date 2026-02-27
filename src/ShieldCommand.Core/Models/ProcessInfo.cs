@@ -1,3 +1,3 @@
-namespace NvidiaShieldManager.Core.Models;
+namespace ShieldCommand.Core.Models;
 
 public record ProcessInfo(int Pid, string Name, double CpuPercent);

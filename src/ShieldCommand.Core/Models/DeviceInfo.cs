@@ -1,4 +1,4 @@
-namespace NvidiaShieldManager.Core.Models;
+namespace ShieldCommand.Core.Models;
 
 public class DeviceInfo
 {

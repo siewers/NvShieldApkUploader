@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
-using NvidiaShieldManager.Core.Services;
+using ShieldCommand.Core.Services;
 
-namespace NvidiaShieldManager.UI.ViewModels;
+namespace ShieldCommand.UI.ViewModels;
 
 public partial class MainWindowViewModel : ViewModelBase
 {
@@ -15,7 +15,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private bool _isDeviceConnected;
 
     [ObservableProperty]
-    private string _windowTitle = "Nvidia Shield Manager — Disconnected";
+    private string _windowTitle = "Shield Command — Disconnected";
 
     [ObservableProperty]
     private string _connectionStatusText = "Disconnected";
@@ -49,8 +49,8 @@ public partial class MainWindowViewModel : ViewModelBase
                 var name = DevicePage.ConnectedDeviceName;
                 var ip = DevicePage.IpAddress;
                 WindowTitle = string.IsNullOrEmpty(name)
-                    ? $"Nvidia Shield Manager — {ip}"
-                    : $"Nvidia Shield Manager — {name} ({ip})";
+                    ? $"Shield Command — {ip}"
+                    : $"Shield Command — {name} ({ip})";
                 ConnectionStatusText = string.IsNullOrEmpty(name)
                     ? $"Connected to {ip}"
                     : $"Connected to {ip} — {name}";
@@ -64,7 +64,7 @@ public partial class MainWindowViewModel : ViewModelBase
             }
             else
             {
-                WindowTitle = "Nvidia Shield Manager — Disconnected";
+                WindowTitle = "Shield Command — Disconnected";
                 ConnectionStatusText = "Disconnected";
                 ActivityMonitorPage.Stop();
                 ProcessesPage.Stop();

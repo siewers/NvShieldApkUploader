@@ -3,9 +3,9 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
-using NvidiaShieldManager.UI.ViewModels;
+using ShieldCommand.UI.ViewModels;
 
-namespace NvidiaShieldManager.UI.Views;
+namespace ShieldCommand.UI.Views;
 
 public partial class InstallView : UserControl
 {

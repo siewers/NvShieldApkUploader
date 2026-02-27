@@ -1,7 +1,7 @@
 ﻿using Avalonia;
 using System;
 
-namespace NvidiaShieldManager.UI;
+namespace ShieldCommand.UI;
 
 sealed class Program
 {

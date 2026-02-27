@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
     <key>CFBundleName</key>
-    <string>Nvidia Shield Manager</string>
+    <string>Shield Command</string>
     <key>CFBundleDisplayName</key>
-    <string>Nvidia Shield Manager</string>
+    <string>Shield Command</string>
     <key>CFBundleIdentifier</key>
-    <string>com.nvshieldmanager.app</string>
+    <string>com.shieldcommand.app</string>
     <key>CFBundleVersion</key>
     <string>1.0.0</string>
     <key>CFBundleIconFile</key>

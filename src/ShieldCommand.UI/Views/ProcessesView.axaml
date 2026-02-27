@@ -1,11 +1,11 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:vm="using:NvidiaShieldManager.UI.ViewModels"
-             xmlns:models="using:NvidiaShieldManager.Core.Models"
+             xmlns:vm="using:ShieldCommand.UI.ViewModels"
+             xmlns:models="using:ShieldCommand.Core.Models"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="400"
-             x:Class="NvidiaShieldManager.UI.Views.ProcessesView"
+             x:Class="ShieldCommand.UI.Views.ProcessesView"
              x:DataType="vm:ProcessesViewModel">
 
     <DockPanel>

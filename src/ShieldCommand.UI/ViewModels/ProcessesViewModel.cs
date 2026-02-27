@@ -1,10 +1,10 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using NvidiaShieldManager.Core.Models;
-using NvidiaShieldManager.Core.Services;
+using ShieldCommand.Core.Models;
+using ShieldCommand.Core.Services;
 
-namespace NvidiaShieldManager.UI.ViewModels;
+namespace ShieldCommand.UI.ViewModels;
 
 public partial class ProcessesViewModel : ViewModelBase
 {

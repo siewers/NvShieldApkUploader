@@ -6,11 +6,11 @@ using LiveChartsCore.Defaults;
 using LiveChartsCore.SkiaSharpView;
 using LiveChartsCore.SkiaSharpView.Painting;
 using LiveChartsCore.SkiaSharpView.Painting.Effects;
-using NvidiaShieldManager.Core.Models;
-using NvidiaShieldManager.Core.Services;
+using ShieldCommand.Core.Models;
+using ShieldCommand.Core.Services;
 using SkiaSharp;
 
-namespace NvidiaShieldManager.UI.ViewModels;
+namespace ShieldCommand.UI.ViewModels;
 
 public partial class ChartLegendItem : ObservableObject
 {

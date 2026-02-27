@@ -2,9 +2,9 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using NvidiaShieldManager.UI.ViewModels;
+using ShieldCommand.UI.ViewModels;
 
-namespace NvidiaShieldManager.UI;
+namespace ShieldCommand.UI;
 
 /// <summary>
 /// Given a view model, returns the corresponding view if possible.

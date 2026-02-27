@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 
-namespace NvidiaShieldManager.UI.Views;
+namespace ShieldCommand.UI.Views;
 
 public partial class SystemView : UserControl
 {

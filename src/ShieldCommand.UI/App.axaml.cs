@@ -8,10 +8,10 @@ using Avalonia.Platform;
 using System.Linq;
 using Avalonia.Markup.Xaml;
 using FluentAvalonia.Styling;
-using NvidiaShieldManager.UI.ViewModels;
-using NvidiaShieldManager.UI.Views;
+using ShieldCommand.UI.ViewModels;
+using ShieldCommand.UI.Views;
 
-namespace NvidiaShieldManager.UI;
+namespace ShieldCommand.UI;
 
 public partial class App : Application
 {
@@ -38,7 +38,7 @@ public partial class App : Application
                 DataContext = new MainWindowViewModel(),
             };
 
-            using var iconStream = AssetLoader.Open(new Uri("avares://NvidiaShieldManager/Assets/app-icon.png"));
+            using var iconStream = AssetLoader.Open(new Uri("avares://ShieldCommand/Assets/app-icon.png"));
             window.Icon = new WindowIcon(iconStream);
 
             desktop.MainWindow = window;
@@ -54,7 +54,7 @@ public partial class App : Application
         {
             var dialog = new Window
             {
-                Title = "About Nvidia Shield Manager",
+                Title = "About Shield Command",
                 Width = 360,
                 Height = 300,
                 CanResize = false,
@@ -70,14 +70,14 @@ public partial class App : Application
                         new Image
                         {
                             Source = new Avalonia.Media.Imaging.Bitmap(
-                                AssetLoader.Open(new Uri("avares://NvidiaShieldManager/Assets/app-icon.png"))),
+                                AssetLoader.Open(new Uri("avares://ShieldCommand/Assets/app-icon.png"))),
                             Width = 72,
                             Height = 72,
                             Margin = new Thickness(0, 0, 0, 8),
                         },
                         new TextBlock
                         {
-                            Text = "Nvidia Shield Manager",
+                            Text = "Shield Command",
                             FontSize = 18,
                             FontWeight = Avalonia.Media.FontWeight.SemiBold,
                             HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,

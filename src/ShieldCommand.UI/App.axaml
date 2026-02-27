@@ -1,9 +1,9 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:sty="using:FluentAvalonia.Styling"
-             x:Class="NvidiaShieldManager.UI.App"
-             xmlns:local="using:NvidiaShieldManager.UI"
-             Name="Nvidia Shield Manager">
+             x:Class="ShieldCommand.UI.App"
+             xmlns:local="using:ShieldCommand.UI"
+             Name="Shield Command">
 
     <Application.DataTemplates>
         <local:ViewLocator/>
@@ -15,7 +15,7 @@
 
     <NativeMenu.Menu>
         <NativeMenu>
-            <NativeMenuItem Header="About Nvidia Shield Manager" Click="AboutMenuItem_Click" />
+            <NativeMenuItem Header="About Shield Command" Click="AboutMenuItem_Click" />
             <NativeMenuItemSeparator />
         </NativeMenu>
     </NativeMenu.Menu>

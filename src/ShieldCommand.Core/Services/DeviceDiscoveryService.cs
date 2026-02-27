@@ -1,7 +1,7 @@
-using NvidiaShieldManager.Core.Models;
+using ShieldCommand.Core.Models;
 using Zeroconf;
 
-namespace NvidiaShieldManager.Core.Services;
+namespace ShieldCommand.Core.Services;
 
 public class DeviceDiscoveryService
 {

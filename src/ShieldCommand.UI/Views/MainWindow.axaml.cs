@@ -10,9 +10,9 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
 using FluentAvalonia.UI.Controls;
-using NvidiaShieldManager.UI.ViewModels;
+using ShieldCommand.UI.ViewModels;
 
-namespace NvidiaShieldManager.UI.Views;
+namespace ShieldCommand.UI.Views;
 
 public partial class MainWindow : Window
 {
@@ -60,7 +60,7 @@ public partial class MainWindow : Window
                                 vb.Child = new Image
                                 {
                                     Source = new Bitmap(
-                                        AssetLoader.Open(new Uri("avares://NvidiaShieldManager/Assets/app-icon.png"))),
+                                        AssetLoader.Open(new Uri("avares://ShieldCommand/Assets/app-icon.png"))),
                                     Width = 18,
                                     Height = 18,
                                 };

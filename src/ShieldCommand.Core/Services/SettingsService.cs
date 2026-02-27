@@ -1,7 +1,7 @@
 using System.Text.Json;
-using NvidiaShieldManager.Core.Models;
+using ShieldCommand.Core.Models;
 
-namespace NvidiaShieldManager.Core.Services;
+namespace ShieldCommand.Core.Services;
 
 public class SettingsService
 {
@@ -14,7 +14,7 @@ public class SettingsService
     {
         var dir = configDirectory
                   ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                      "NvidiaShieldManager");
+                      "ShieldCommand");
         Directory.CreateDirectory(dir);
         _filePath = Path.Combine(dir, "settings.json");
         Load();

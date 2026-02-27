@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace NvidiaShieldManager.UI.ViewModels;
+namespace ShieldCommand.UI.ViewModels;
 
 public abstract class ViewModelBase : ObservableObject
 {

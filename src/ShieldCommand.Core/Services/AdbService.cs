@@ -1,7 +1,7 @@
 using System.Diagnostics;
-using NvidiaShieldManager.Core.Models;
+using ShieldCommand.Core.Models;
 
-namespace NvidiaShieldManager.Core.Services;
+namespace ShieldCommand.Core.Services;
 
 public class AdbService
 {

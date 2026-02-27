@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 
-namespace NvidiaShieldManager.UI.Views;
+namespace ShieldCommand.UI.Views;
 
 public partial class DeviceView : UserControl
 {
