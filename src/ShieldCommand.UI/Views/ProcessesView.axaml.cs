@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using ShieldCommand.Core.Models;
 using ShieldCommand.UI.Helpers;
 using ShieldCommand.UI.ViewModels;
 
@@ -16,28 +17,90 @@ public sealed partial class ProcessesView : UserControl
         // Tunnel so we get the event before DataGrid's own handling
         ProcessGrid.AddHandler(PointerReleasedEvent, OnGridPointerReleased, RoutingStrategies.Tunnel);
         ProcessGrid.Sorting += OnGridSorting;
+        ProcessGrid.DoubleTapped += OnGridDoubleTapped;
+
+        _memoryComparer = new MemoryComparer();
+        ProcessGrid.Columns[2].CustomSortComparer = _memoryComparer;
+    }
+
+    private readonly MemoryComparer _memoryComparer;
+
+    /// Sorts by MemoryMb, always placing 0 (unknown) at the bottom.
+    /// The DataGrid reverses the comparer for descending, so we counteract that
+    /// for zero-entries by flipping the sign based on tracked direction.
+    private sealed class MemoryComparer : System.Collections.IComparer
+    {
+        public bool Descending { get; set; }
+
+        public int Compare(object? x, object? y)
+        {
+            var a = (x as ProcessInfo)?.MemoryMb ?? 0;
+            var b = (y as ProcessInfo)?.MemoryMb ?? 0;
+            var aZero = a == 0;
+            var bZero = b == 0;
+
+            if (aZero && bZero)
+            {
+                return 0;
+            }
+
+            if (aZero != bZero)
+            {
+                // In ascending mode the DataGrid uses our result directly.
+                // In descending mode the DataGrid negates our result, so we
+                // negate first so the double-negation keeps zeros at the bottom.
+                var zeroLast = aZero ? 1 : -1;
+                return Descending ? zeroLast : -zeroLast;
+            }
+
+            return a.CompareTo(b);
+        }
+    }
+
+    private async void OnGridDoubleTapped(object? sender, TappedEventArgs e)
+    {
+        if (DataContext is not ProcessesViewModel vm || vm.SelectedProcess is not { } proc)
+        {
+            return;
+        }
+
+        await ShowProcessInfoAsync(vm, proc);
     }
 
     // Columns whose first sort click should be descending (highest value first).
     private static readonly HashSet<string> DescendingFirstHeaders = ["% CPU", "Memory"];
     private int _lastSortedColumnIndex = -1;
+    private bool _isSorting;
 
     private void OnGridSorting(object? sender, DataGridColumnEventArgs e)
     {
+        if (_isSorting)
+        {
+            return;
+        }
+
         var idx = e.Column.DisplayIndex;
         var header = e.Column.Header?.ToString() ?? "";
         var isFirstClick = _lastSortedColumnIndex != idx;
         _lastSortedColumnIndex = idx;
+
+        if (header == "Memory")
+        {
+            // Update comparer direction — the DataGrid handles the actual sort.
+            // First click → descending (handled below); subsequent clicks toggle
+            // and the DataGrid applies the sort direction itself.
+            _memoryComparer.Descending = isFirstClick || !_memoryComparer.Descending;
+        }
 
         if (!isFirstClick || !DescendingFirstHeaders.Contains(header))
         {
             return;
         }
 
-        // Switching to this column — prevent the DataGrid's default Ascending sort
-        // and sort Descending directly (no flicker from double-sort).
         e.Handled = true;
+        _isSorting = true;
         e.Column.Sort(ListSortDirection.Descending);
+        _isSorting = false;
     }
 
     private void OnGridPointerReleased(object? sender, PointerReleasedEventArgs e)
@@ -67,6 +130,7 @@ public sealed partial class ProcessesView : UserControl
             OverlayDismissEventPassThrough = true,
             Items =
             {
+                MenuHelper.CreateItem("Info", "\uf05a", () => _ = ShowProcessInfoAsync(vm, proc)),
                 MenuHelper.CreateGoogleSearchItem(searchName),
                 new Separator(),
                 new MenuItem
@@ -85,4 +149,16 @@ public sealed partial class ProcessesView : UserControl
         flyout.ShowAt(ProcessGrid, true);
     }
 
+    private static async Task ShowProcessInfoAsync(ProcessesViewModel vm, ProcessInfo proc)
+    {
+        var details = await vm.AdbService.GetProcessDetailsAsync(proc.Pid, proc.PackageName);
+        InstalledPackage? package = proc.IsUserApp
+            ? await vm.AdbService.GetPackageInfoAsync(proc.PackageName, includeSize: true)
+            : null;
+
+        if (await PackageInfoDialog.ShowAsync(details, package, proc.IsUserApp ? "Kill" : null))
+        {
+            await vm.KillProcessCommand.ExecuteAsync(null);
+        }
+    }
 }

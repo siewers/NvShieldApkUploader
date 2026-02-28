@@ -33,14 +33,26 @@ public sealed class ProcessInfo : INotifyPropertyChanged
     public double MemoryMb
     {
         get => _memoryMb;
-        set { if (_memoryMb != value) { _memoryMb = value; OnPropertyChanged(); } }
+        set
+        {
+            if (_memoryMb != value)
+            {
+                _memoryMb = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(MemoryDisplay));
+            }
+        }
     }
+
+    public string MemoryDisplay => _memoryMb > 0 ? $"{_memoryMb:F1} MB" : "\u2014";
+
+    public string State { get; }
 
     public bool IsUserApp { get; }
 
     public string Kind => IsUserApp ? "User" : "System";
 
-    public ProcessInfo(int pid, string name, string packageName, double cpuPercent, double memoryMb, bool isUserApp)
+    public ProcessInfo(int pid, string name, string packageName, double cpuPercent, double memoryMb, bool isUserApp, char stateChar)
     {
         Pid = pid;
         _name = name;
@@ -50,6 +62,17 @@ public sealed class ProcessInfo : INotifyPropertyChanged
         _cpuPercent = cpuPercent;
         _memoryMb = memoryMb;
         IsUserApp = isUserApp;
+        State = stateChar switch
+        {
+            'R' => "Running",
+            'S' => "Sleeping",
+            'D' => "Disk Sleep",
+            'Z' => "Zombie",
+            'T' => "Stopped",
+            't' => "Traced",
+            'X' => "Dead",
+            _ => stateChar.ToString(),
+        };
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;

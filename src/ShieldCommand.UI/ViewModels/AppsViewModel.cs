@@ -8,7 +8,7 @@ namespace ShieldCommand.UI.ViewModels;
 
 public sealed partial class AppsViewModel : ViewModelBase
 {
-    private readonly AdbService _adbService;
+    public AdbService AdbService { get; }
 
     [ObservableProperty]
     private bool _isBusy;
@@ -20,7 +20,7 @@ public sealed partial class AppsViewModel : ViewModelBase
 
     public AppsViewModel(AdbService adbService)
     {
-        _adbService = adbService;
+        AdbService = adbService;
     }
 
     [RelayCommand]
@@ -29,7 +29,7 @@ public sealed partial class AppsViewModel : ViewModelBase
         IsBusy = true;
         StatusText = "Loading packages...";
 
-        var packages = await _adbService.GetInstalledPackagesAsync();
+        var packages = await AdbService.GetInstalledPackagesAsync();
         Packages.Clear();
         foreach (var pkg in packages)
         {
@@ -46,7 +46,7 @@ public sealed partial class AppsViewModel : ViewModelBase
         IsBusy = true;
         StatusText = $"Uninstalling {package.PackageName}...";
 
-        var result = await _adbService.UninstallPackageAsync(package.PackageName);
+        var result = await AdbService.UninstallPackageAsync(package.PackageName);
 
         if (result.Success)
         {

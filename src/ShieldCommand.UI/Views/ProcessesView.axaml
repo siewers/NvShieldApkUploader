@@ -37,9 +37,18 @@
                 <DataGridTextColumn Header="% CPU"
                                     Binding="{Binding CpuPercent, StringFormat={}{0:F1}%}"
                                     Width="80" />
-                <DataGridTextColumn Header="Memory"
-                                    Binding="{Binding MemoryMb, StringFormat={}{0:F1} MB}"
-                                    Width="100" />
+                <DataGridTemplateColumn Header="Memory"
+                                        Width="100"
+                                        SortMemberPath="MemoryMb"
+                                        x:DataType="models:ProcessInfo">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate x:DataType="models:ProcessInfo">
+                            <TextBlock Text="{Binding MemoryDisplay}"
+                                       VerticalAlignment="Center"
+                                       Margin="12,0,0,0"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
                 <DataGridTextColumn Header="Kind"
                                     Binding="{Binding Kind}"
                                     Width="70" />

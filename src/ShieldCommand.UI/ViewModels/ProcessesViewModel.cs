@@ -8,7 +8,7 @@ namespace ShieldCommand.UI.ViewModels;
 
 public sealed partial class ProcessesViewModel : ViewModelBase
 {
-    private readonly AdbService _adbService;
+    public AdbService AdbService { get; }
     private readonly ActivityMonitorViewModel _activityMonitor;
     private PeriodicTimer? _timer;
     private CancellationTokenSource? _cts;
@@ -42,7 +42,7 @@ public sealed partial class ProcessesViewModel : ViewModelBase
             return;
         }
 
-        var result = await _adbService.KillProcessAsync(proc.Pid, proc.PackageName);
+        var result = await AdbService.KillProcessAsync(proc.Pid, proc.PackageName);
         if (result.Success)
         {
             Processes.Remove(proc);
@@ -56,7 +56,7 @@ public sealed partial class ProcessesViewModel : ViewModelBase
 
     public ProcessesViewModel(AdbService adbService, ActivityMonitorViewModel activityMonitor)
     {
-        _adbService = adbService;
+        AdbService = adbService;
         _activityMonitor = activityMonitor;
 
         _activityMonitor.PropertyChanged += (_, e) =>
@@ -84,7 +84,7 @@ public sealed partial class ProcessesViewModel : ViewModelBase
         // Take two snapshots back-to-back so the first render has CPU% deltas
         if (_prevProcs.Count == 0)
         {
-            var baseSnapshot = await _adbService.GetProcessSnapshotAsync();
+            var baseSnapshot = await AdbService.GetProcessSnapshotAsync();
             if (baseSnapshot.Processes.Count > 0)
             {
                 _prevProcs = baseSnapshot.Processes;
@@ -133,7 +133,7 @@ public sealed partial class ProcessesViewModel : ViewModelBase
 
     private async Task PollAsync()
     {
-        var snapshot = await _adbService.GetProcessSnapshotAsync();
+        var snapshot = await AdbService.GetProcessSnapshotAsync();
         if (snapshot.Processes.Count == 0)
         {
             return; // Bad read, skip this cycle
@@ -164,7 +164,7 @@ public sealed partial class ProcessesViewModel : ViewModelBase
             var memMb = Math.Round(entry.RssPages * 4.0 / 1024.0, 1); // pages are 4KB on ARM
             // Android FIRST_APPLICATION_UID = 10000; UIDs >= 10000 are user-installed apps
             var isUserApp = entry.Uid >= 10000;
-            processes.Add(new ProcessInfo(pid, entry.Name, entry.Cmdline, Math.Round(cpuPct, 1), memMb, isUserApp));
+            processes.Add(new ProcessInfo(pid, entry.Name, entry.Cmdline, Math.Round(cpuPct, 1), memMb, isUserApp, entry.State));
         }
 
         // System-wide CPU% from /proc/stat idle delta (not the sum of per-process CPU%).

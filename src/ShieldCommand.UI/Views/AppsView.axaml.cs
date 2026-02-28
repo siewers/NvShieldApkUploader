@@ -26,7 +26,7 @@ public sealed partial class AppsView : UserControl
     {
         if (PackageList.SelectedItem is InstalledPackage package && DataContext is AppsViewModel vm)
         {
-            ShowInfoDialog(package, vm);
+            _ = ShowInfoAndUninstallAsync(package, vm);
         }
     }
 
@@ -50,78 +50,26 @@ public sealed partial class AppsView : UserControl
             OverlayDismissEventPassThrough = true,
             Items =
             {
-                MenuHelper.CreateItem("Info", "\uf05a", () => ShowInfoDialog(package, vm)),
+                MenuHelper.CreateItem("Info", "\uf05a", () => _ = ShowInfoAndUninstallAsync(package, vm)),
                 MenuHelper.CreateGoogleSearchItem(package.PackageName),
                 new Separator(),
-                MenuHelper.CreateItem("Uninstall", "\uf2ed", () => ShowUninstallDialog(package, vm)),
+                MenuHelper.CreateItem("Uninstall", "\uf2ed", () => _ = ShowUninstallAsync(package, vm)),
             }
         };
 
         flyout.ShowAt(PackageList, true);
     }
 
-    private async void ShowInfoDialog(InstalledPackage package, AppsViewModel vm)
+    private static async Task ShowInfoAndUninstallAsync(InstalledPackage package, AppsViewModel vm)
     {
-        var grid = new Grid
-        {
-            ColumnDefinitions = ColumnDefinitions.Parse("Auto,*"),
-            RowDefinitions = RowDefinitions.Parse("Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"),
-            MinWidth = 350,
-        };
-
-        var labels = new[]
-        {
-            "Package", "Version", "Version Code", "Installer",
-            "First Installed", "Last Updated", "Target SDK", "Min SDK", "Data Dir",
-        };
-
-        var values = new[]
-        {
-            package.PackageName, package.VersionName, package.VersionCode,
-            package.InstallerPackageName, package.FirstInstallTime, package.LastUpdateTime,
-            package.TargetSdk, package.MinSdk, package.DataDir,
-        };
-
-        for (var i = 0; i < labels.Length; i++)
-        {
-            var label = new TextBlock
-            {
-                Text = labels[i],
-                FontWeight = Avalonia.Media.FontWeight.SemiBold,
-                Margin = new Avalonia.Thickness(0, 2, 12, 2),
-            };
-            Grid.SetRow(label, i);
-            Grid.SetColumn(label, 0);
-            grid.Children.Add(label);
-
-            var value = new TextBlock
-            {
-                Text = values[i] ?? "\u2014",
-                Margin = new Avalonia.Thickness(0, 2),
-                TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-            };
-            Grid.SetRow(value, i);
-            Grid.SetColumn(value, 1);
-            grid.Children.Add(value);
-        }
-
-        var dialog = new ContentDialog
-        {
-            Title = package.PackageName,
-            Content = grid,
-            PrimaryButtonText = "Uninstall",
-            CloseButtonText = "Close",
-            DefaultButton = ContentDialogButton.Close,
-        };
-
-        var result = await dialog.ShowAsync();
-        if (result == ContentDialogResult.Primary)
+        var detailed = await vm.AdbService.GetPackageInfoAsync(package.PackageName, includeSize: true);
+        if (await PackageInfoDialog.ShowAsync(detailed, "Uninstall"))
         {
             await vm.UninstallCommand.ExecuteAsync(package);
         }
     }
 
-    private async void ShowUninstallDialog(InstalledPackage package, AppsViewModel vm)
+    private static async Task ShowUninstallAsync(InstalledPackage package, AppsViewModel vm)
     {
         var dialog = new ContentDialog
         {
@@ -132,8 +80,7 @@ public sealed partial class AppsView : UserControl
             DefaultButton = ContentDialogButton.Close,
         };
 
-        var result = await dialog.ShowAsync();
-        if (result == ContentDialogResult.Primary)
+        if (await dialog.ShowAsync() == ContentDialogResult.Primary)
         {
             await vm.UninstallCommand.ExecuteAsync(package);
         }

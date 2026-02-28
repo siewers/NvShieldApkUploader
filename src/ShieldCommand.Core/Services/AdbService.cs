@@ -125,8 +125,8 @@ public sealed class AdbService
         return packages.OrderBy(p => p.PackageName).ToList();
     }
 
-    private async Task<InstalledPackage> GetPackageInfoAsync(
-        string packageName, string? deviceSerial = null)
+    public async Task<InstalledPackage> GetPackageInfoAsync(
+        string packageName, string? deviceSerial = null, bool includeSize = false)
     {
         var deviceArg = deviceSerial != null ? $"-s {deviceSerial}" : "";
         var result = await RunAdbAsync($"{deviceArg} shell dumpsys package {packageName}".Trim());
@@ -145,6 +145,7 @@ public sealed class AdbService
         string? minSdk = null;
         string? dataDir = null;
         string? uid = null;
+        string? codePath = null;
 
         foreach (var line in result.Output.Split('\n'))
         {
@@ -156,9 +157,22 @@ public sealed class AdbService
             }
             else if (versionCode == null && trimmed.StartsWith("versionCode="))
             {
-                var value = trimmed["versionCode=".Length..];
-                var spaceIdx = value.IndexOf(' ');
-                versionCode = spaceIdx > 0 ? value[..spaceIdx] : value;
+                // Line format: "versionCode=123 minSdk=23 targetSdk=35"
+                foreach (var part in trimmed.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    if (versionCode == null && part.StartsWith("versionCode="))
+                    {
+                        versionCode = part["versionCode=".Length..];
+                    }
+                    else if (minSdk == null && part.StartsWith("minSdk="))
+                    {
+                        minSdk = part["minSdk=".Length..];
+                    }
+                    else if (targetSdk == null && part.StartsWith("targetSdk="))
+                    {
+                        targetSdk = part["targetSdk=".Length..];
+                    }
+                }
             }
             else if (installerPackageName == null && trimmed.StartsWith("installerPackageName="))
             {
@@ -172,17 +186,13 @@ public sealed class AdbService
             {
                 lastUpdateTime = trimmed["lastUpdateTime=".Length..];
             }
-            else if (targetSdk == null && trimmed.StartsWith("targetSdk="))
-            {
-                targetSdk = trimmed["targetSdk=".Length..];
-            }
-            else if (minSdk == null && trimmed.StartsWith("minSdk="))
-            {
-                minSdk = trimmed["minSdk=".Length..];
-            }
             else if (dataDir == null && trimmed.StartsWith("dataDir="))
             {
                 dataDir = trimmed["dataDir=".Length..];
+            }
+            else if (codePath == null && trimmed.StartsWith("codePath="))
+            {
+                codePath = trimmed["codePath=".Length..];
             }
             else if (uid == null && trimmed.StartsWith("userId="))
             {
@@ -190,10 +200,98 @@ public sealed class AdbService
             }
         }
 
+        string? codeSize = null;
+        if (includeSize)
+        {
+            // pm path lists all APK splits; stat each to get total installed size.
+            // du fails on /data/app without root, but stat on individual APKs works.
+            var pmResult = await RunAdbAsync(
+                $"{deviceArg} shell pm path {packageName}".Trim());
+            if (pmResult.Success)
+            {
+                var statArgs = string.Join(' ', pmResult.Output
+                    .Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(l => l.Replace("package:", "").Trim())
+                    .Where(p => p.Length > 0));
+
+                if (statArgs.Length > 0)
+                {
+                    var statResult = await RunAdbAsync(
+                        $"{deviceArg} shell stat -c %s {statArgs}".Trim());
+                    if (statResult.Success)
+                    {
+                        long totalBytes = 0;
+                        foreach (var line in statResult.Output.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+                        {
+                            if (long.TryParse(line.Trim(), out var bytes))
+                            {
+                                totalBytes += bytes;
+                            }
+                        }
+
+                        codeSize = totalBytes >= 1024 * 1024 * 1024L
+                            ? $"{totalBytes / (1024.0 * 1024.0 * 1024.0):F1} GB"
+                            : totalBytes >= 1024 * 1024
+                                ? $"{totalBytes / (1024.0 * 1024.0):F1} MB"
+                                : totalBytes >= 1024
+                                    ? $"{totalBytes / 1024.0:F1} KB"
+                                    : $"{totalBytes} B";
+                    }
+                }
+            }
+        }
+
         return new InstalledPackage(
             packageName, versionName, versionCode,
             installerPackageName, firstInstallTime, lastUpdateTime,
-            targetSdk, minSdk, dataDir, uid);
+            targetSdk, minSdk, dataDir, uid, codePath, codeSize);
+    }
+
+    public async Task<ProcessDetails> GetProcessDetailsAsync(int pid, string name, string? deviceSerial = null)
+    {
+        var deviceArg = deviceSerial != null ? $"-s {deviceSerial}" : "";
+        var result = await RunAdbAsync($"{deviceArg} shell cat /proc/{pid}/status".Trim());
+
+        if (!result.Success)
+        {
+            return new ProcessDetails(pid, name);
+        }
+
+        string? state = null;
+        string? uid = null;
+        string? threads = null;
+        string? vmRss = null;
+        string? ppid = null;
+
+        foreach (var line in result.Output.Split('\n'))
+        {
+            var trimmed = line.Trim();
+
+            if (state == null && trimmed.StartsWith("State:"))
+            {
+                state = trimmed["State:".Length..].Trim();
+            }
+            else if (uid == null && trimmed.StartsWith("Uid:"))
+            {
+                // Uid line has real/effective/saved/fs — take the first (real)
+                var parts = trimmed["Uid:".Length..].Trim().Split('\t', StringSplitOptions.RemoveEmptyEntries);
+                uid = parts.Length > 0 ? parts[0] : null;
+            }
+            else if (threads == null && trimmed.StartsWith("Threads:"))
+            {
+                threads = trimmed["Threads:".Length..].Trim();
+            }
+            else if (vmRss == null && trimmed.StartsWith("VmRSS:"))
+            {
+                vmRss = trimmed["VmRSS:".Length..].Trim();
+            }
+            else if (ppid == null && trimmed.StartsWith("PPid:"))
+            {
+                ppid = trimmed["PPid:".Length..].Trim();
+            }
+        }
+
+        return new ProcessDetails(pid, name, state, uid, threads, vmRss, ppid);
     }
 
     public async Task<AdbResult> InstallApkAsync(string apkFilePath, string? deviceSerial = null)
@@ -697,7 +795,7 @@ public sealed class AdbService
         }
 
         // Temporary storage without UID — filled during section 1, UIDs added in section 2
-        var procData = new Dictionary<int, (long Jiffies, string Name, long RssPages)>();
+        var procData = new Dictionary<int, (long Jiffies, string Name, long RssPages, char State)>();
         var section = 0;
         var uidByPid = new Dictionary<int, int>();
 
@@ -774,7 +872,8 @@ public sealed class AdbService
 
                 long.TryParse(afterComm[21], out var rssPages);
 
-                procData[pid] = (utime + stime, name, rssPages);
+                var state = afterComm[0].Length > 0 ? afterComm[0][0] : '?';
+                procData[pid] = (utime + stime, name, rssPages, state);
             }
             else if (section == 2)
             {
@@ -834,11 +933,11 @@ public sealed class AdbService
         }
 
         // Merge UID and cmdline info into process data
-        foreach (var (pid, (jiffies, name, rssPages)) in procData)
+        foreach (var (pid, (jiffies, name, rssPages, state)) in procData)
         {
             uidByPid.TryGetValue(pid, out var uid);
             cmdlineByPid.TryGetValue(pid, out var cmdline);
-            procs[pid] = new RawProcessEntry(pid, jiffies, name, rssPages, uid, cmdline ?? name);
+            procs[pid] = new RawProcessEntry(pid, jiffies, name, rssPages, uid, cmdline ?? name, state);
         }
 
         return new ProcessSnapshot(procs, totalJiffies, idleJiffies);

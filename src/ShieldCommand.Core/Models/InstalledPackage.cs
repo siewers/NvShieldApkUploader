@@ -10,4 +10,6 @@ public sealed record InstalledPackage(
     string? TargetSdk = null,
     string? MinSdk = null,
     string? DataDir = null,
-    string? Uid = null);
+    string? Uid = null,
+    string? CodePath = null,
+    string? CodeSize = null);
