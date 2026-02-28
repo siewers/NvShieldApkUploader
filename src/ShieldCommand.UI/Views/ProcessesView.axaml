@@ -32,7 +32,7 @@
                   x:Name="ProcessGrid">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Process"
-                                    Binding="{Binding Name}"
+                                    Binding="{Binding FullName}"
                                     Width="*" />
                 <DataGridTextColumn Header="% CPU"
                                     Binding="{Binding CpuPercent, StringFormat={}{0:F1}%}"
