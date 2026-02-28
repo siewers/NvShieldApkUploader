@@ -130,12 +130,12 @@ public sealed partial class ProcessesView : UserControl
             OverlayDismissEventPassThrough = true,
             Items =
             {
-                MenuHelper.CreateItem("Info", "\uf05a", () => _ = ShowProcessInfoAsync(vm, proc)),
+                MenuHelper.CreateItem("Info", "\ue2ce", () => _ = ShowProcessInfoAsync(vm, proc)),
                 MenuHelper.CreateGoogleSearchItem(searchName),
                 new Separator(),
                 MenuHelper.CreateItem(
-                    $"Terminate \"{proc.Name}\" (PID {proc.Pid})",
-                    "\uf00d",
+                    "Terminate",
+                    "\ue4f6",
                     () => vm.KillProcessCommand.Execute(null))
             }
         };

@@ -130,16 +130,16 @@ public sealed partial class MainWindow : Window
         };
     }
 
-    private static readonly Avalonia.Media.FontFamily FontAwesome =
-        new("avares://ShieldCommander/Assets/Fonts#Font Awesome 5 Pro Light");
+    private static readonly Avalonia.Media.FontFamily PhosphorThin =
+        new("avares://ShieldCommander/Assets/Fonts#Phosphor-Thin");
 
     private void SetNavigationIcons()
     {
         var topIcons = new IconSource[]
         {
-            new FontIconSource { Glyph = "\uf05a", FontFamily = FontAwesome }, // circle-info
-            new FontIconSource { Glyph = "\uf009", FontFamily = FontAwesome }, // table-cells-large
-            new FontIconSource { Glyph = "\uf1fe", FontFamily = FontAwesome }, // chart-area
+            new FontIconSource { Glyph = "\ue2ce", FontFamily = PhosphorThin, FontSize = 20 }, // info
+            new FontIconSource { Glyph = "\ue296", FontFamily = PhosphorThin, FontSize = 20 }, // grid-four
+            new FontIconSource { Glyph = "\ue154", FontFamily = PhosphorThin, FontSize = 20 }, // chart-line
         };
         var items = NavView.MenuItems;
 
@@ -156,12 +156,12 @@ public sealed partial class MainWindow : Window
         {
             var childIcons = new IconSource[]
             {
-                new FontIconSource { Glyph = "\uf2db", FontFamily = FontAwesome }, // microchip
-                new FontIconSource { Glyph = "\uf538", FontFamily = FontAwesome }, // memory
-                new FontIconSource { Glyph = "\uf0a0", FontFamily = FontAwesome }, // hard-drive
-                new FontIconSource { Glyph = "\uf6ff", FontFamily = FontAwesome }, // network-wired
-                new FontIconSource { Glyph = "\uf2c9", FontFamily = FontAwesome }, // temperature-half
-                new FontIconSource { Glyph = "\uf0ae", FontFamily = FontAwesome }, // list-check
+                new FontIconSource { Glyph = "\ue610", FontFamily = PhosphorThin, FontSize = 20 }, // cpu
+                new FontIconSource { Glyph = "\ue9c4", FontFamily = PhosphorThin, FontSize = 20 }, // memory
+                new FontIconSource { Glyph = "\ue29e", FontFamily = PhosphorThin, FontSize = 20 }, // hard-drive
+                new FontIconSource { Glyph = "\uedde", FontFamily = PhosphorThin, FontSize = 20 }, // network
+                new FontIconSource { Glyph = "\ue5c6", FontFamily = PhosphorThin, FontSize = 20 }, // thermometer
+                new FontIconSource { Glyph = "\ueadc", FontFamily = PhosphorThin, FontSize = 20 }, // list-checks
             };
             var children = activityMonitor.MenuItems;
             for (var i = 0; i < children.Count && i < childIcons.Length; i++)

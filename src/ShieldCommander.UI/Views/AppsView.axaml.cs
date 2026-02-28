@@ -48,10 +48,10 @@ public sealed partial class AppsView : UserControl
             OverlayDismissEventPassThrough = true,
             Items =
             {
-                MenuHelper.CreateItem("Info", "\uf05a", () => _ = ShowInfoAndUninstallAsync(row, vm)),
+                MenuHelper.CreateItem("Info", "\ue2ce", () => _ = ShowInfoAndUninstallAsync(row, vm)),
                 MenuHelper.CreateGoogleSearchItem(row.PackageName),
                 new Separator(),
-                MenuHelper.CreateItem("Uninstall", "\uf2ed", () => _ = ShowUninstallAsync(row, vm)),
+                MenuHelper.CreateItem("Uninstall", "\ue4a6", () => _ = ShowUninstallAsync(row, vm)),
             }
         };
 

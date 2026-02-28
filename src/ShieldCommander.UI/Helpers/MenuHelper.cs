@@ -2,13 +2,14 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using Avalonia.Media;
+using FluentAvalonia.UI.Controls;
 
 namespace ShieldCommander.UI.Helpers;
 
 internal static class MenuHelper
 {
-    private static readonly FontFamily FontAwesome =
-        new("avares://ShieldCommander/Assets/Fonts#Font Awesome 5 Pro Light");
+    private static readonly FontFamily PhosphorThin =
+        new("avares://ShieldCommander/Assets/Fonts#Phosphor-Thin");
 
     public static MenuItem CreateItem(string header, Action onClick)
     {
@@ -21,12 +22,27 @@ internal static class MenuHelper
     {
         var item = new MenuItem
         {
-            Header = header,
-            Icon = new TextBlock
+            Header = new Avalonia.Controls.StackPanel
             {
-                Text = glyph,
-                FontFamily = FontAwesome,
-                FontSize = 14,
+                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                Spacing = 8,
+                VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                Children =
+                {
+                    new FontIcon
+                    {
+                        Glyph = glyph,
+                        FontFamily = PhosphorThin,
+                        FontSize = 20,
+                        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                    },
+                    new Avalonia.Controls.TextBlock
+                    {
+                        Text = header,
+                        VerticalAlignment = Avalonia.Layout.VerticalAlignment.Center,
+                        Margin = new Avalonia.Thickness(0, 2, 0, 0),
+                    },
+                },
             },
         };
         item.Click += (_, _) => onClick();
@@ -37,8 +53,8 @@ internal static class MenuHelper
     {
         var url = $"https://www.google.com/search?q=what+is+%22{Uri.EscapeDataString(searchTerm)}%22+android";
         return CreateItem(
-            $"Search Google for \"{searchTerm}\"",
-            "\uf002",
+            "Search Google",
+            "\ue30c",
             () => OpenBrowser(url));
     }
 

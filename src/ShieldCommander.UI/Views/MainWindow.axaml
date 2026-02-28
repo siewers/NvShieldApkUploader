@@ -70,6 +70,9 @@
                            IsSettingsVisible="False"
                            PaneTitle="Shield Commander"
                            SelectionChanged="NavView_SelectionChanged">
+            <ui:NavigationView.Resources>
+                <x:Double x:Key="NavigationViewItemOnLeftIconBoxHeight">20</x:Double>
+            </ui:NavigationView.Resources>
             <ui:NavigationView.Content>
                 <ContentControl Content="{Binding CurrentPage}" Margin="24,16" />
             </ui:NavigationView.Content>
