@@ -4,7 +4,7 @@ using ShieldCommand.Core.Services;
 
 namespace ShieldCommand.UI.ViewModels;
 
-public partial class SystemViewModel : ViewModelBase
+public sealed partial class SystemViewModel : ViewModelBase
 {
     private readonly AdbService _adbService;
 

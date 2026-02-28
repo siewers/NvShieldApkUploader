@@ -1,6 +1,6 @@
 namespace ShieldCommand.UI.Models;
 
-public record RefreshRate(string Label, TimeSpan Interval, TimeSpan ChartWindow, TimeSpan MiniWindow)
+public sealed record RefreshRate(string Label, TimeSpan Interval, TimeSpan ChartWindow, TimeSpan MiniWindow)
 {
     public override string ToString() => Label;
 

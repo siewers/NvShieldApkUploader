@@ -3,7 +3,7 @@ using ShieldCommand.Core.Models;
 
 namespace ShieldCommand.Core.Services;
 
-public class SettingsService
+public sealed class SettingsService
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 

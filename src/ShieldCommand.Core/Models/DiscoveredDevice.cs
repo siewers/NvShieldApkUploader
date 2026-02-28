@@ -1,3 +1,3 @@
 namespace ShieldCommand.Core.Models;
 
-public record DiscoveredDevice(string IpAddress, string? DisplayName = null);
+public sealed record DiscoveredDevice(string IpAddress, string? DisplayName = null);

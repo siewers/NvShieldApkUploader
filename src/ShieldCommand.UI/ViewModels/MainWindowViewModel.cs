@@ -3,7 +3,7 @@ using ShieldCommand.Core.Services;
 
 namespace ShieldCommand.UI.ViewModels;
 
-public partial class MainWindowViewModel : ViewModelBase
+public sealed partial class MainWindowViewModel : ViewModelBase
 {
     private readonly AdbService _adbService = new();
     private readonly SettingsService _settingsService = new();

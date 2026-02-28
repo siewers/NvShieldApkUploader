@@ -7,7 +7,7 @@ using ShieldCommand.UI.ViewModels;
 
 namespace ShieldCommand.UI.Views;
 
-public partial class InstallView : UserControl
+public sealed partial class InstallView : UserControl
 {
     public InstallView()
     {

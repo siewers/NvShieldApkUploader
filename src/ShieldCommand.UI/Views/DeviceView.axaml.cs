@@ -3,7 +3,7 @@ using Avalonia.Interactivity;
 
 namespace ShieldCommand.UI.Views;
 
-public partial class DeviceView : UserControl
+public sealed partial class DeviceView : UserControl
 {
     public DeviceView()
     {

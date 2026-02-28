@@ -6,7 +6,7 @@ using ShieldCommand.Core.Services;
 
 namespace ShieldCommand.UI.ViewModels;
 
-public partial class ProcessesViewModel : ViewModelBase
+public sealed partial class ProcessesViewModel : ViewModelBase
 {
     private readonly AdbService _adbService;
     private readonly ActivityMonitorViewModel _activityMonitor;

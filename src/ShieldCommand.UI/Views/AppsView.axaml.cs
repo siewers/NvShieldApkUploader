@@ -5,7 +5,7 @@ using ShieldCommand.UI.ViewModels;
 
 namespace ShieldCommand.UI.Views;
 
-public partial class AppsView : UserControl
+public sealed partial class AppsView : UserControl
 {
     public AppsView()
     {

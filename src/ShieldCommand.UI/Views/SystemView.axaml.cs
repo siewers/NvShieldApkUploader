@@ -2,7 +2,7 @@ using Avalonia.Controls;
 
 namespace ShieldCommand.UI.Views;
 
-public partial class SystemView : UserControl
+public sealed partial class SystemView : UserControl
 {
     public SystemView()
     {

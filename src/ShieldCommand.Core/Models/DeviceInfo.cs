@@ -1,6 +1,6 @@
 namespace ShieldCommand.Core.Models;
 
-public class DeviceInfo
+public sealed class DeviceInfo
 {
     // Static
     public string? Model { get; set; }

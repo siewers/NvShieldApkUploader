@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace ShieldCommand.Core.Models;
 
-public class ProcessInfo : INotifyPropertyChanged
+public sealed class ProcessInfo : INotifyPropertyChanged
 {
     public int Pid { get; }
 

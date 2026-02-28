@@ -1,3 +1,3 @@
 namespace ShieldCommand.Core.Models;
 
-public record AdbResult(bool Success, string Output, string Error = "");
+public sealed record AdbResult(bool Success, string Output, string Error = "");

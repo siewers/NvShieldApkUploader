@@ -1,6 +1,6 @@
 namespace ShieldCommand.Core.Models;
 
-public class SavedDevice
+public sealed class SavedDevice
 {
     public required string IpAddress { get; set; }
     public string? DeviceName { get; set; }

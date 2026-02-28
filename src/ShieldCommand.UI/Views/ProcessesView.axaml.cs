@@ -9,7 +9,7 @@ using ShieldCommand.UI.ViewModels;
 
 namespace ShieldCommand.UI.Views;
 
-public partial class ProcessesView : UserControl
+public sealed partial class ProcessesView : UserControl
 {
     public ProcessesView()
     {

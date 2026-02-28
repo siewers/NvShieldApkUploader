@@ -6,7 +6,7 @@ using ShieldCommand.Core.Services;
 
 namespace ShieldCommand.UI.ViewModels;
 
-public partial class DeviceViewModel : ViewModelBase
+public sealed partial class DeviceViewModel : ViewModelBase
 {
     private readonly AdbService _adbService;
     private readonly SettingsService _settingsService;

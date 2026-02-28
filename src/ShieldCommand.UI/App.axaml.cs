@@ -13,7 +13,7 @@ using ShieldCommand.UI.Views;
 
 namespace ShieldCommand.UI;
 
-public partial class App : Application
+public sealed partial class App : Application
 {
     public override void Initialize()
     {

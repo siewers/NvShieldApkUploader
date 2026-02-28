@@ -15,7 +15,7 @@ using ShieldCommand.UI.ViewModels;
 
 namespace ShieldCommand.UI.Views;
 
-public partial class MainWindow : Window
+public sealed partial class MainWindow : Window
 {
     public MainWindow()
     {

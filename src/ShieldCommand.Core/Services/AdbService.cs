@@ -3,7 +3,7 @@ using ShieldCommand.Core.Models;
 
 namespace ShieldCommand.Core.Services;
 
-public class AdbService
+public sealed class AdbService
 {
     private readonly string _adbPath;
     private AdbShellSession? _session;

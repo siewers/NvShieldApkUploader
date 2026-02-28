@@ -5,7 +5,7 @@ using ShieldCommand.Core.Services;
 
 namespace ShieldCommand.UI.ViewModels;
 
-public partial class InstallViewModel : ViewModelBase
+public sealed partial class InstallViewModel : ViewModelBase
 {
     private readonly AdbService _adbService;
 

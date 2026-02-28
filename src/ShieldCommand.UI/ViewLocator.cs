@@ -12,7 +12,7 @@ namespace ShieldCommand.UI;
 [RequiresUnreferencedCode(
     "Default implementation of ViewLocator involves reflection which may be trimmed away.",
     Url = "https://docs.avaloniaui.net/docs/concepts/view-locator")]
-public class ViewLocator : IDataTemplate
+public sealed class ViewLocator : IDataTemplate
 {
     public Control? Build(object? param)
     {

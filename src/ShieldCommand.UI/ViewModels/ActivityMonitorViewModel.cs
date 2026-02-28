@@ -13,14 +13,14 @@ using SkiaSharp;
 
 namespace ShieldCommand.UI.ViewModels;
 
-public partial class ChartLegendItem : ObservableObject
+public sealed partial class ChartLegendItem : ObservableObject
 {
     public string Name { get; init; } = "";
     public Avalonia.Media.Color Color { get; init; }
     [ObservableProperty] private string _value = "—";
 }
 
-public partial class ActivityMonitorViewModel : ViewModelBase
+public sealed partial class ActivityMonitorViewModel : ViewModelBase
 {
     private readonly AdbService _adbService;
     private PeriodicTimer? _timer;

@@ -1,6 +1,6 @@
 namespace ShieldCommand.Core.Models;
 
-public class DeviceSuggestion
+public sealed class DeviceSuggestion
 {
     public required string IpAddress { get; init; }
     public string? DisplayName { get; init; }
