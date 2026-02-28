@@ -34,7 +34,7 @@ public partial class MainWindowViewModel : ViewModelBase
         InstallPage = new InstallViewModel(_adbService);
         SystemPage = new SystemViewModel(_adbService);
         ActivityMonitorPage = new ActivityMonitorViewModel(_adbService);
-        ProcessesPage = new ProcessesViewModel(_adbService);
+        ProcessesPage = new ProcessesViewModel(_adbService, ActivityMonitorPage);
         _currentPage = SystemPage;
 
         DevicePage.PropertyChanged += (_, e) =>
@@ -55,9 +55,12 @@ public partial class MainWindowViewModel : ViewModelBase
                     ? $"Connected to {ip}"
                     : $"Connected to {ip} — {name}";
 
+                _ = _adbService.OpenSessionAsync();
                 _ = SystemPage.ActivateAsync();
                 _ = ActivityMonitorPage.StartAsync();
-                _ = ProcessesPage.StartAsync();
+
+                if (CurrentPage == ProcessesPage)
+                    _ = ProcessesPage.StartAsync();
 
                 if (CurrentPage == AppsPage && AppsPage.Packages.Count == 0)
                     AppsPage.RefreshCommand.Execute(null);
@@ -66,14 +69,19 @@ public partial class MainWindowViewModel : ViewModelBase
             {
                 WindowTitle = "Shield Command — Disconnected";
                 ConnectionStatusText = "Disconnected";
+                _adbService.CloseSession();
                 ActivityMonitorPage.Stop();
                 ProcessesPage.Stop();
             }
         };
     }
 
+    public void CloseAdbSession() => _adbService.CloseSession();
+
     public void NavigateTo(string tag)
     {
+        var previousPage = CurrentPage;
+
         CurrentPage = tag switch
         {
             "Apps" => AppsPage,
@@ -85,5 +93,11 @@ public partial class MainWindowViewModel : ViewModelBase
 
         if (CurrentPage == AppsPage && AppsPage.Packages.Count == 0 && IsDeviceConnected)
             AppsPage.RefreshCommand.Execute(null);
+
+        // Start/stop processes polling based on page visibility
+        if (CurrentPage == ProcessesPage && !ProcessesPage.IsMonitoring && IsDeviceConnected)
+            _ = ProcessesPage.StartAsync();
+        else if (previousPage == ProcessesPage && CurrentPage != ProcessesPage)
+            ProcessesPage.Stop();
     }
 }

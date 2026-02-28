@@ -6,10 +6,31 @@ namespace ShieldCommand.Core.Services;
 public class AdbService
 {
     private readonly string _adbPath;
+    private AdbShellSession? _session;
 
     public AdbService(string? adbPath = null)
     {
         _adbPath = adbPath ?? "adb";
+    }
+
+    public async Task OpenSessionAsync(string? deviceSerial = null)
+    {
+        CloseSession();
+        _session = new AdbShellSession(_adbPath, deviceSerial);
+        await _session.OpenAsync();
+    }
+
+    public void CloseSession()
+    {
+        _session?.Dispose();
+        _session = null;
+    }
+
+    private async Task<string?> RunShellAsync(string command, CancellationToken ct = default)
+    {
+        if (_session is not null)
+            return await _session.RunAsync(command, ct);
+        return null;
     }
 
     public async Task<AdbResult> ConnectAsync(string ipAddress, int port = 5555)
@@ -170,10 +191,23 @@ public class AdbService
             "dumpsys diskstats",      // 9
         ]);
 
-        var dynamicResult = await RunAdbAsync($"{prefix} \"{combinedCmd}\"", strictCheck: false);
-        var sections = dynamicResult.Success
-            ? dynamicResult.Output.Split($"\n{sep}\n", StringSplitOptions.None)
-            : [];
+        // Prefer persistent shell session for polling commands
+        string? shellOutput = null;
+        if (_session is not null)
+            shellOutput = await RunShellAsync(combinedCmd);
+
+        string[] sections;
+        if (shellOutput is not null)
+        {
+            sections = shellOutput.Split($"\n{sep}\n", StringSplitOptions.None);
+        }
+        else
+        {
+            var dynamicResult = await RunAdbAsync($"{prefix} \"{combinedCmd}\"", strictCheck: false);
+            sections = dynamicResult.Success
+                ? dynamicResult.Output.Split($"\n{sep}\n", StringSplitOptions.None)
+                : [];
+        }
 
         // Helper to safely get a section
         string GetSection(int index) => index < sections.Length ? sections[index] : "";
@@ -490,39 +524,82 @@ public class AdbService
         return parts.Length >= 2 ? parts[1] : "Unknown";
     }
 
-    public async Task<List<ProcessInfo>> GetProcessesAsync(string? deviceSerial = null)
+    /// <summary>
+    /// Reads /proc/stat total jiffies and per-process jiffies + names from /proc/[pid]/stat.
+    /// Returns (perProcessJiffies, totalCpuJiffies).
+    /// </summary>
+    public async Task<(Dictionary<int, (long Jiffies, string Name)> Procs, long TotalJiffies)>
+        GetProcessSnapshotAsync(string? deviceSerial = null)
     {
         var deviceArg = deviceSerial != null ? $"-s {deviceSerial}" : "";
         var prefix = string.IsNullOrEmpty(deviceArg) ? "shell" : $"{deviceArg} shell";
-        var result = await RunAdbAsync($"{prefix} dumpsys cpuinfo", strictCheck: false);
 
-        var processes = new List<ProcessInfo>();
-        if (!result.Success)
-            return processes;
+        // Single call: read /proc/stat then all per-process stat files.
+        // Some /proc/[pid]/stat files may vanish mid-read causing a non-zero exit,
+        // but the output for surviving processes is still valid.
+        const string cmd = "cat /proc/stat; echo ---; cat /proc/[0-9]*/stat";
 
-        foreach (var line in result.Output.Split('\n'))
+        string? output = null;
+        if (_session is not null)
+            output = await RunShellAsync(cmd);
+
+        if (output is null)
         {
-            var trimmed = line.Trim();
-            // Lines like: "7.4% 1234/com.example.app: 5.2% user + 2.2% kernel"
-            var slashIdx = trimmed.IndexOf('/');
-            if (slashIdx < 0) continue;
-
-            var colonIdx = trimmed.IndexOf(':', slashIdx);
-            if (colonIdx < 0) continue;
-
-            var pctEnd = trimmed.IndexOf('%');
-            if (pctEnd < 0 || pctEnd > slashIdx) continue;
-
-            if (!double.TryParse(trimmed[..pctEnd], out var cpu)) continue;
-
-            var pidStr = trimmed[(pctEnd + 1)..slashIdx].Trim();
-            if (!int.TryParse(pidStr, out var pid)) continue;
-
-            var name = trimmed[(slashIdx + 1)..colonIdx].Trim();
-            processes.Add(new ProcessInfo(pid, name, cpu));
+            var result = await RunAdbAsync(
+                $"{prefix} \"{cmd}\"", strictCheck: false);
+            output = result.Output;
         }
 
-        return processes.OrderByDescending(p => p.CpuPercent).ToList();
+        var procs = new Dictionary<int, (long Jiffies, string Name)>();
+        var totalJiffies = 0L;
+
+        if (string.IsNullOrWhiteSpace(output))
+            return (procs, totalJiffies);
+
+        var pastSeparator = false;
+
+        foreach (var line in output.Split('\n'))
+        {
+            var trimmed = line.Trim();
+            if (trimmed.Length == 0) continue;
+
+            if (trimmed == "---") { pastSeparator = true; continue; }
+
+            if (!pastSeparator)
+            {
+                if (trimmed.StartsWith("cpu "))
+                {
+                    var fields = trimmed.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+                    for (var i = 1; i < fields.Length; i++)
+                        if (long.TryParse(fields[i], out var v)) totalJiffies += v;
+                }
+                continue;
+            }
+
+            // Format: pid (comm) state ppid ... utime stime ...
+            var commEnd = trimmed.LastIndexOf(')');
+            if (commEnd < 0) continue;
+
+            var pidEnd = trimmed.IndexOf(' ');
+            if (pidEnd < 0) continue;
+            if (!int.TryParse(trimmed[..pidEnd], out var pid)) continue;
+
+            var commStart = trimmed.IndexOf('(');
+            var name = commStart >= 0 && commEnd > commStart
+                ? trimmed[(commStart + 1)..commEnd]
+                : pid.ToString();
+
+            var afterComm = trimmed[(commEnd + 1)..].Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+            // afterComm[0]=state [1]=ppid ... [11]=utime [12]=stime
+            if (afterComm.Length < 13) continue;
+
+            if (!long.TryParse(afterComm[11], out var utime)) continue;
+            if (!long.TryParse(afterComm[12], out var stime)) continue;
+
+            procs[pid] = (utime + stime, name);
+        }
+
+        return (procs, totalJiffies);
     }
 
     private Task<AdbResult> RunAdbAsync(string arguments) => RunAdbAsync(arguments, strictCheck: true);

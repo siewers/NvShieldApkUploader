@@ -28,6 +28,7 @@ public partial class MainWindow : Window
             {
                 vm.ActivityMonitorPage.Stop();
                 vm.ProcessesPage.Stop();
+                vm.CloseAdbSession();
 
                 if (vm.IsDeviceConnected)
                     await vm.DevicePage.DisconnectCommand.ExecuteAsync(null);
@@ -45,7 +46,7 @@ public partial class MainWindow : Window
             // Small delay to ensure all templates are fully applied
             await System.Threading.Tasks.Task.Delay(100);
 
-            Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+            Avalonia.Threading.Dispatcher.UIThread.Post(async () =>
             {
                 foreach (var descendant in NavView.GetVisualDescendants())
                 {
@@ -92,10 +93,12 @@ public partial class MainWindow : Window
                 // Auto-select first nav item
                 NavView.SelectedItem = NavView.MenuItems.OfType<NavigationViewItem>().FirstOrDefault();
 
-                // Auto-open device dialog on startup if not connected
+                // Auto-connect or open device dialog on startup
                 if (DataContext is MainWindowViewModel vm && !vm.IsDeviceConnected)
                 {
-                    _ = OpenDeviceDialog();
+                    var autoConnected = await vm.DevicePage.AutoConnectAsync();
+                    if (!autoConnected)
+                        _ = OpenDeviceDialog();
                 }
             });
         };
@@ -103,14 +106,21 @@ public partial class MainWindow : Window
 
     private void SetNavigationIcons()
     {
-        var symbols = new[] { Symbol.Settings, Symbol.AllApps, Symbol.Alert, Symbol.List };
+        var symbolFont = new Avalonia.Media.FontFamily("avares://FluentAvalonia/Fonts#Symbols");
+        var symbols = new IconSource[]
+        {
+            new FontIconSource { Glyph = "\uE770", FontFamily = symbolFont }, // System
+            new SymbolIconSource { Symbol = Symbol.AllApps },
+            new FontIconSource { Glyph = "\uE9D9", FontFamily = symbolFont }, // Diagnostic
+            new FontIconSource { Glyph = "\uE9F5", FontFamily = symbolFont }, // Processing
+        };
         var items = NavView.MenuItems;
 
         for (var i = 0; i < items.Count && i < symbols.Length; i++)
         {
             if (items[i] is NavigationViewItem item)
             {
-                item.IconSource = new SymbolIconSource { Symbol = symbols[i] };
+                item.IconSource = symbols[i];
             }
         }
     }
