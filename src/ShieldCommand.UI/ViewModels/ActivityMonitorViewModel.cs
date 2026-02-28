@@ -28,6 +28,8 @@ public partial class ActivityMonitorViewModel : ViewModelBase
     private TimeSpan _chartWindow = RefreshRate.Default.ChartWindow;
     private TimeSpan _miniWindow = RefreshRate.Default.MiniWindow;
 
+    private static readonly Func<double, string> OneDecimalLabeler = v => v.ToString("F1");
+
     private static readonly SKColor[] ZoneColors =
     [
         SKColors.OrangeRed,
@@ -104,7 +106,7 @@ public partial class ActivityMonitorViewModel : ViewModelBase
     public Axis[] CpuXAxes { get; }
     public Axis[] CpuYAxes { get; } =
     [
-        new Axis { Name = "%", MinLimit = 0, MaxLimit = 100, Labeler = v => v.ToString("F1") }
+        new Axis { Name = "%", MinLimit = 0, MaxLimit = 100, Labeler = OneDecimalLabeler }
     ];
 
     // Mini CPU load chart (stacked user + system)
@@ -127,7 +129,7 @@ public partial class ActivityMonitorViewModel : ViewModelBase
     public Axis[] MemXAxes { get; }
     public Axis[] MemYAxes { get; } =
     [
-        new Axis { Name = "MB", MinLimit = 0, Labeler = v => v.ToString("F1") }
+        new Axis { Name = "MB", MinLimit = 0, Labeler = OneDecimalLabeler }
     ];
 
     private bool _memMaxSet;
@@ -164,7 +166,7 @@ public partial class ActivityMonitorViewModel : ViewModelBase
     public Axis[] ThermalXAxes { get; }
     public Axis[] ThermalYAxes { get; } =
     [
-        new Axis { Name = "°C", Labeler = v => v.ToString("F1") }
+        new Axis { Name = "°C", Labeler = OneDecimalLabeler }
     ];
 
     // Mini thermal chart (avg + hottest zone trend)
@@ -196,7 +198,7 @@ public partial class ActivityMonitorViewModel : ViewModelBase
     public Axis[] DiskXAxes { get; }
     public Axis[] DiskYAxes { get; } =
     [
-        new Axis { Name = "KB/s", MinLimit = 0, Labeler = v => v.ToString("F1") }
+        new Axis { Name = "KB/s", MinLimit = 0, Labeler = OneDecimalLabeler }
     ];
 
     public ObservableCollection<ISeries> DiskLoadSeries { get; } = [];
@@ -228,7 +230,7 @@ public partial class ActivityMonitorViewModel : ViewModelBase
     public Axis[] NetXAxes { get; }
     public Axis[] NetYAxes { get; } =
     [
-        new Axis { Name = "KB/s", MinLimit = 0, Labeler = v => v.ToString("F1") }
+        new Axis { Name = "KB/s", MinLimit = 0, Labeler = OneDecimalLabeler }
     ];
 
     public ObservableCollection<ISeries> NetLoadSeries { get; } = [];
@@ -595,7 +597,7 @@ public partial class ActivityMonitorViewModel : ViewModelBase
                 _miniSystemPoints.Add(new DateTimePoint(now, sysPct));
                 TrimOldPoints(_miniUserPoints, now, mini: true);
                 TrimOldPoints(_miniSystemPoints, now, mini: true);
-                UpdateAxisLimits(_miniXAxis, mini: true);
+                UpdateAxisLimits(_miniXAxis, mini: true, now);
             }
         }
         else
@@ -648,7 +650,7 @@ public partial class ActivityMonitorViewModel : ViewModelBase
             _coreState[name] = (state.Points, coreActive, coreTotal, state.Series, state.Legend);
         }
 
-        UpdateAxisLimits(_cpuXAxis);
+        UpdateAxisLimits(_cpuXAxis, now: now);
     }
 
     // --- Memory ---
@@ -663,7 +665,7 @@ public partial class ActivityMonitorViewModel : ViewModelBase
 
         _memPoints.Add(new DateTimePoint(now, usedMb));
         TrimOldPoints(_memPoints, now);
-        UpdateAxisLimits(_memXAxis);
+        UpdateAxisLimits(_memXAxis, now: now);
 
         if (!_memMaxSet)
         {
@@ -707,7 +709,7 @@ public partial class ActivityMonitorViewModel : ViewModelBase
         TrimOldPoints(_miniMemUsedPoints, now, mini: true);
         TrimOldPoints(_miniMemCachedPoints, now, mini: true);
         TrimOldPoints(_miniMemFreePoints, now, mini: true);
-        UpdateAxisLimits(_miniMemXAxis, mini: true);
+        UpdateAxisLimits(_miniMemXAxis, mini: true, now);
         MemLoadYAxes[0].MaxLimit = 100;
     }
 
@@ -742,12 +744,14 @@ public partial class ActivityMonitorViewModel : ViewModelBase
                 _miniDiskWritePoints.Add(new DateTimePoint(now, -writeKbPerSec));
                 TrimOldPoints(_miniDiskReadPoints, now, mini: true);
                 TrimOldPoints(_miniDiskWritePoints, now, mini: true);
-                UpdateAxisLimits(_miniDiskXAxis, mini: true);
+                UpdateAxisLimits(_miniDiskXAxis, mini: true, now);
 
-                DiskReadSpeedText = FormatSpeed(readKbPerSec * 1024);
-                DiskWriteSpeedText = FormatSpeed(writeKbPerSec * 1024);
-                DiskLegend[0].Value = FormatSpeed(readKbPerSec * 1024);
-                DiskLegend[1].Value = FormatSpeed(writeKbPerSec * 1024);
+                var readSpeed = FormatSpeed(readKbPerSec * 1024);
+                var writeSpeed = FormatSpeed(writeKbPerSec * 1024);
+                DiskReadSpeedText = readSpeed;
+                DiskWriteSpeedText = writeSpeed;
+                DiskLegend[0].Value = readSpeed;
+                DiskLegend[1].Value = writeSpeed;
             }
         }
 
@@ -755,7 +759,7 @@ public partial class ActivityMonitorViewModel : ViewModelBase
         _prevDiskKbWritten = info.DiskKbWritten;
         _prevDiskTime = now;
 
-        UpdateAxisLimits(_diskXAxis);
+        UpdateAxisLimits(_diskXAxis, now: now);
     }
 
     private static string FormatBytes(long bytes) => bytes switch
@@ -814,14 +818,16 @@ public partial class ActivityMonitorViewModel : ViewModelBase
                 _miniNetOutPoints.Add(new DateTimePoint(now, -outKbPerSec));
                 TrimOldPoints(_miniNetInPoints, now, mini: true);
                 TrimOldPoints(_miniNetOutPoints, now, mini: true);
-                UpdateAxisLimits(_miniNetXAxis, mini: true);
+                UpdateAxisLimits(_miniNetXAxis, mini: true, now);
 
-                NetInSpeedText = FormatSpeed(inBytes / elapsed);
-                NetOutSpeedText = FormatSpeed(outBytes / elapsed);
+                var inSpeed = FormatSpeed(inBytes / elapsed);
+                var outSpeed = FormatSpeed(outBytes / elapsed);
+                NetInSpeedText = inSpeed;
+                NetOutSpeedText = outSpeed;
                 NetPacketsInPerSecText = $"{pktsInPerSec:F0}";
                 NetPacketsOutPerSecText = $"{pktsOutPerSec:F0}";
-                NetLegend[0].Value = FormatSpeed(inBytes / elapsed);
-                NetLegend[1].Value = FormatSpeed(outBytes / elapsed);
+                NetLegend[0].Value = inSpeed;
+                NetLegend[1].Value = outSpeed;
             }
         }
 
@@ -831,7 +837,7 @@ public partial class ActivityMonitorViewModel : ViewModelBase
         _prevNetPacketsOut = info.NetPacketsOut;
         _prevNetTime = now;
 
-        UpdateAxisLimits(_netXAxis);
+        UpdateAxisLimits(_netXAxis, now: now);
     }
 
     // --- Thermals ---
@@ -872,14 +878,14 @@ public partial class ActivityMonitorViewModel : ViewModelBase
             state.Legend.Value = $"{value:F1}°C";
         }
 
-        UpdateAxisLimits(_thermalXAxis);
+        UpdateAxisLimits(_thermalXAxis, now: now);
 
         // Enforce a minimum 10°C Y-axis range so small fluctuations aren't exaggerated
-        var allValues = _zoneState.Values.SelectMany(s => s.Points).Select(p => p.Value ?? 0).ToList();
-        if (allValues.Count > 0)
+        // Use current tick's values only — the chart auto-scales based on visible data
+        if (temperatures.Count > 0)
         {
-            var min = allValues.Min();
-            var max = allValues.Max();
+            var min = temperatures.Min(t => t.Value);
+            var max = temperatures.Max(t => t.Value);
             var range = max - min;
             const double minRange = 10.0;
             if (range < minRange)
@@ -896,7 +902,7 @@ public partial class ActivityMonitorViewModel : ViewModelBase
         var avg = temperatures.Average(t => t.Value);
         var currentMin = temperatures.Min(t => t.Value);
         var currentMax = temperatures.Max(t => t.Value);
-        var hottest = temperatures.OrderByDescending(t => t.Value).First();
+        var hottest = temperatures.MaxBy(t => t.Value);
 
         AvgTemperatureText = $"{avg:F1}°C";
         MinTemperatureText = $"{currentMin:F1}°C";
@@ -910,7 +916,7 @@ public partial class ActivityMonitorViewModel : ViewModelBase
         _miniThermalMaxPoints.Add(new DateTimePoint(now, currentMax));
         TrimOldPoints(_miniThermalAvgPoints, now, mini: true);
         TrimOldPoints(_miniThermalMaxPoints, now, mini: true);
-        UpdateAxisLimits(_miniThermalXAxis, mini: true);
+        UpdateAxisLimits(_miniThermalXAxis, mini: true, now);
     }
 
     // --- Helpers ---
@@ -927,9 +933,9 @@ public partial class ActivityMonitorViewModel : ViewModelBase
             points.RemoveAt(0);
     }
 
-    private void UpdateAxisLimits(DateTimeAxis axis, bool mini = false)
+    private void UpdateAxisLimits(DateTimeAxis axis, bool mini = false, DateTime now = default)
     {
-        var now = DateTime.Now;
+        if (now == default) now = DateTime.Now;
         var window = mini ? _miniWindow : _chartWindow;
         axis.MinLimit = (now - window).Ticks;
         axis.MaxLimit = now.Ticks;

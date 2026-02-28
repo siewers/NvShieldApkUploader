@@ -33,6 +33,21 @@ public class AdbService
         return null;
     }
 
+    /// Runs a command via the persistent shell session if available, otherwise falls back
+    /// to a one-off adb shell process. Use for polling commands that benefit from session reuse.
+    private async Task<string> RunShellWithFallbackAsync(string command, string adbPrefix)
+    {
+        if (_session is not null)
+        {
+            var output = await RunShellAsync(command);
+            if (output is not null)
+                return output;
+        }
+
+        var result = await RunAdbAsync($"{adbPrefix} \"{command}\"", strictCheck: false);
+        return result.Output ?? "";
+    }
+
     public async Task<AdbResult> ConnectAsync(string ipAddress, int port = 5555)
     {
         return await RunAdbAsync($"connect {ipAddress}:{port}");
@@ -163,35 +178,13 @@ public class AdbService
 
         // First try am force-stop with the package name (works for app packages)
         var forceStopCmd = $"am force-stop {packageName} 2>&1; echo EXIT:$?";
-        string? output = null;
-
-        if (_session is not null)
-            output = await RunShellAsync(forceStopCmd);
-
-        if (output is null)
-        {
-            var result = await RunAdbAsync($"{prefix} \"{forceStopCmd}\"", strictCheck: false);
-            output = result.Output;
-        }
-
-        output = output?.Trim() ?? "";
+        var output = (await RunShellWithFallbackAsync(forceStopCmd, prefix)).Trim();
         if (output.Contains("EXIT:0") && !output.Contains("Error"))
             return new AdbResult(true, output);
 
         // Fall back to kill -9 for non-app processes
         var killCmd = $"kill -9 {pid} 2>&1; echo EXIT:$?";
-        output = null;
-
-        if (_session is not null)
-            output = await RunShellAsync(killCmd);
-
-        if (output is null)
-        {
-            var result = await RunAdbAsync($"{prefix} \"{killCmd}\"", strictCheck: false);
-            output = result.Output;
-        }
-
-        output = output?.Trim() ?? "";
+        output = (await RunShellWithFallbackAsync(killCmd, prefix)).Trim();
         var success = output.Contains("EXIT:0");
         var error = output.Replace("EXIT:0", "").Replace("EXIT:1", "").Trim();
         return new AdbResult(success, output, error);
@@ -242,22 +235,8 @@ public class AdbService
         ]);
 
         // Prefer persistent shell session for polling commands
-        string? shellOutput = null;
-        if (_session is not null)
-            shellOutput = await RunShellAsync(combinedCmd);
-
-        string[] sections;
-        if (shellOutput is not null)
-        {
-            sections = shellOutput.Split($"\n{sep}\n", StringSplitOptions.None);
-        }
-        else
-        {
-            var dynamicResult = await RunAdbAsync($"{prefix} \"{combinedCmd}\"", strictCheck: false);
-            sections = dynamicResult.Success
-                ? dynamicResult.Output.Split($"\n{sep}\n", StringSplitOptions.None)
-                : [];
-        }
+        var shellOutput = await RunShellWithFallbackAsync(combinedCmd, prefix);
+        var sections = shellOutput.Split($"\n{sep}\n", StringSplitOptions.None);
 
         // Helper to safely get a section
         string GetSection(int index) => index < sections.Length ? sections[index] : "";
@@ -589,16 +568,7 @@ public class AdbService
         // but the output for surviving processes is still valid.
         const string cmd = "cat /proc/stat; echo ---; cat /proc/[0-9]*/stat";
 
-        string? output = null;
-        if (_session is not null)
-            output = await RunShellAsync(cmd);
-
-        if (output is null)
-        {
-            var result = await RunAdbAsync(
-                $"{prefix} \"{cmd}\"", strictCheck: false);
-            output = result.Output;
-        }
+        var output = await RunShellWithFallbackAsync(cmd, prefix);
 
         var procs = new Dictionary<int, (long Jiffies, string Name, long RssPages)>();
         var totalJiffies = 0L;

@@ -189,9 +189,7 @@ public partial class ProcessesViewModel : ViewModelBase
                 if (i < Processes.Count && Processes[i].Pid == incoming.Pid)
                 {
                     // Same position — update in place
-                    Processes[i].Name = incoming.Name;
-                    Processes[i].CpuPercent = incoming.CpuPercent;
-                    Processes[i].MemoryMb = incoming.MemoryMb;
+                    CopyProcessFields(Processes[i], incoming);
                 }
                 else if (existingByPid.TryGetValue(incoming.Pid, out var existing))
                 {
@@ -199,9 +197,7 @@ public partial class ProcessesViewModel : ViewModelBase
                     var oldIndex = Processes.IndexOf(existing);
                     if (oldIndex >= 0 && oldIndex != i)
                         Processes.Move(oldIndex, i);
-                    existing.Name = incoming.Name;
-                    existing.CpuPercent = incoming.CpuPercent;
-                    existing.MemoryMb = incoming.MemoryMb;
+                    CopyProcessFields(existing, incoming);
                 }
                 else
                 {
@@ -214,5 +210,12 @@ public partial class ProcessesViewModel : ViewModelBase
             LoadText = $"Total CPU: {systemCpuPct:F1}%";
             StatusText = $"{sorted.Count} processes";
         });
+    }
+
+    private static void CopyProcessFields(ProcessInfo target, ProcessInfo source)
+    {
+        target.Name = source.Name;
+        target.CpuPercent = source.CpuPercent;
+        target.MemoryMb = source.MemoryMb;
     }
 }
