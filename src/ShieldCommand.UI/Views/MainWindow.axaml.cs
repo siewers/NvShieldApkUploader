@@ -10,6 +10,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.VisualTree;
 using FluentAvalonia.UI.Controls;
+using ShieldCommand.Core.Services;
 using ShieldCommand.UI.Models;
 using ShieldCommand.UI.ViewModels;
 
@@ -27,6 +28,11 @@ public sealed partial class MainWindow : Window
         {
             if (DataContext is MainWindowViewModel vm)
             {
+                if (WindowState == WindowState.Normal)
+                {
+                    AppSettingsAccessor.Settings.SaveWindowBounds(Position.X, Position.Y, Width, Height);
+                }
+
                 vm.ActivityMonitorPage.Stop();
                 vm.ProcessesPage.Stop();
                 vm.CloseAdbSession();
@@ -35,6 +41,21 @@ public sealed partial class MainWindow : Window
                 {
                     await vm.DevicePage.DisconnectCommand.ExecuteAsync(null);
                 }
+            }
+        };
+
+        Opened += (_, _) =>
+        {
+            var settings = AppSettingsAccessor.Settings;
+            if (settings.WindowSize is var (w, h))
+            {
+                Width = w;
+                Height = h;
+            }
+
+            if (settings.WindowPosition is var (x, y))
+            {
+                Position = new PixelPoint((int)x, (int)y);
             }
         };
     }

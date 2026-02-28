@@ -9,7 +9,6 @@ namespace ShieldCommand.UI.ViewModels;
 public sealed partial class DeviceViewModel : ViewModelBase
 {
     private readonly AdbService _adbService;
-    private readonly SettingsService _settingsService;
     private readonly DeviceDiscoveryService _discoveryService = new();
 
     [ObservableProperty]
@@ -34,10 +33,9 @@ public sealed partial class DeviceViewModel : ViewModelBase
     public ObservableCollection<SavedDevice> SavedDevices { get; } = [];
     public ObservableCollection<DeviceSuggestion> DeviceSuggestions { get; } = [];
 
-    public DeviceViewModel(AdbService adbService, SettingsService settingsService)
+    public DeviceViewModel(AdbService adbService)
     {
         _adbService = adbService;
-        _settingsService = settingsService;
         LoadSavedDevices();
         RefreshSuggestions();
         _ = ScanForSuggestionsAsync();
@@ -46,7 +44,7 @@ public sealed partial class DeviceViewModel : ViewModelBase
     private void LoadSavedDevices()
     {
         SavedDevices.Clear();
-        foreach (var device in _settingsService.SavedDevices.OrderByDescending(d => d.LastConnected))
+        foreach (var device in AppSettingsAccessor.Settings.SavedDevices.OrderByDescending(d => d.LastConnected))
         {
             SavedDevices.Add(device);
         }
@@ -74,7 +72,7 @@ public sealed partial class DeviceViewModel : ViewModelBase
 
             var device = ConnectedDevices.FirstOrDefault(d => d.IpAddress.StartsWith(IpAddress));
             ConnectedDeviceName = device?.DeviceName ?? "";
-            _settingsService.AddOrUpdateDevice(IpAddress, device?.DeviceName);
+            AppSettingsAccessor.Settings.AddOrUpdateDevice(IpAddress, device?.DeviceName);
             LoadSavedDevices();
             RefreshSuggestions();
         }
@@ -90,13 +88,13 @@ public sealed partial class DeviceViewModel : ViewModelBase
     [RelayCommand]
     private void ToggleAutoConnect(SavedDevice device)
     {
-        _settingsService.SetAutoConnect(device.IpAddress, !device.AutoConnect);
+        AppSettingsAccessor.Settings.SetAutoConnect(device.IpAddress, !device.AutoConnect);
         LoadSavedDevices();
     }
 
     public async Task<bool> AutoConnectAsync()
     {
-        var device = _settingsService.SavedDevices.FirstOrDefault(d => d.AutoConnect);
+        var device = AppSettingsAccessor.Settings.SavedDevices.FirstOrDefault(d => d.AutoConnect);
         if (device == null)
         {
             return false;
@@ -117,14 +115,14 @@ public sealed partial class DeviceViewModel : ViewModelBase
     [RelayCommand]
     private void RemoveSavedDevice(SavedDevice device)
     {
-        _settingsService.RemoveDevice(device.IpAddress);
+        AppSettingsAccessor.Settings.RemoveDevice(device.IpAddress);
         LoadSavedDevices();
     }
 
     private void RefreshSuggestions()
     {
         DeviceSuggestions.Clear();
-        foreach (var saved in _settingsService.SavedDevices.OrderByDescending(d => d.LastConnected))
+        foreach (var saved in AppSettingsAccessor.Settings.SavedDevices.OrderByDescending(d => d.LastConnected))
         {
             DeviceSuggestions.Add(new DeviceSuggestion
             {

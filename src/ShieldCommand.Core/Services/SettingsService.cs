@@ -22,6 +22,29 @@ public sealed class SettingsService
 
     public IReadOnlyList<SavedDevice> SavedDevices => _settings.SavedDevices.AsReadOnly();
 
+    public (double Width, double Height)? WindowSize
+    {
+        get => _settings.WindowWidth > 0 && _settings.WindowHeight > 0
+            ? (_settings.WindowWidth, _settings.WindowHeight)
+            : null;
+    }
+
+    public (double X, double Y)? WindowPosition
+    {
+        get => _settings.WindowX is not null && _settings.WindowY is not null
+            ? (_settings.WindowX.Value, _settings.WindowY.Value)
+            : null;
+    }
+
+    public void SaveWindowBounds(double x, double y, double width, double height)
+    {
+        _settings.WindowX = x;
+        _settings.WindowY = y;
+        _settings.WindowWidth = width;
+        _settings.WindowHeight = height;
+        Save();
+    }
+
     public void AddOrUpdateDevice(string ipAddress, string? deviceName = null)
     {
         var existing = _settings.SavedDevices.FirstOrDefault(
@@ -90,8 +113,12 @@ public sealed class SettingsService
         File.WriteAllText(_filePath, json);
     }
 
-    private class AppSettings
+    private sealed class AppSettings
     {
         public List<SavedDevice> SavedDevices { get; set; } = [];
+        public double WindowWidth { get; set; }
+        public double WindowHeight { get; set; }
+        public double? WindowX { get; set; }
+        public double? WindowY { get; set; }
     }
 }

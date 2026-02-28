@@ -6,8 +6,6 @@ namespace ShieldCommand.UI.ViewModels;
 public sealed partial class MainWindowViewModel : ViewModelBase
 {
     private readonly AdbService _adbService = new();
-    private readonly SettingsService _settingsService = new();
-
     [ObservableProperty]
     private ViewModelBase _currentPage;
 
@@ -29,7 +27,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     public MainWindowViewModel()
     {
-        DevicePage = new DeviceViewModel(_adbService, _settingsService);
+        DevicePage = new DeviceViewModel(_adbService);
         AppsPage = new AppsViewModel(_adbService);
         InstallPage = new InstallViewModel(_adbService);
         SystemPage = new SystemViewModel(_adbService);
