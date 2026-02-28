@@ -109,23 +109,46 @@ public sealed partial class MainWindow : Window
         };
     }
 
+    private static readonly Avalonia.Media.FontFamily FontAwesome =
+        new("avares://ShieldCommand/Assets/Fonts#Font Awesome 5 Pro Light");
+
     private void SetNavigationIcons()
     {
-        var symbolFont = new Avalonia.Media.FontFamily("avares://FluentAvalonia/Fonts#Symbols");
-        var symbols = new IconSource[]
+        var topIcons = new IconSource[]
         {
-            new FontIconSource { Glyph = "\uE770", FontFamily = symbolFont }, // System
-            new SymbolIconSource { Symbol = Symbol.AllApps },
-            new FontIconSource { Glyph = "\uE9D9", FontFamily = symbolFont }, // Diagnostic
-            new FontIconSource { Glyph = "\uE9F5", FontFamily = symbolFont }, // Processing
+            new FontIconSource { Glyph = "\uf05a", FontFamily = FontAwesome }, // circle-info
+            new FontIconSource { Glyph = "\uf009", FontFamily = FontAwesome }, // table-cells-large
+            new FontIconSource { Glyph = "\uf1fe", FontFamily = FontAwesome }, // chart-area
         };
         var items = NavView.MenuItems;
 
-        for (var i = 0; i < items.Count && i < symbols.Length; i++)
+        for (var i = 0; i < items.Count && i < topIcons.Length; i++)
         {
             if (items[i] is NavigationViewItem item)
             {
-                item.IconSource = symbols[i];
+                item.IconSource = topIcons[i];
+            }
+        }
+
+        // Child icons under Activity Monitor
+        if (items.Count > 2 && items[2] is NavigationViewItem activityMonitor)
+        {
+            var childIcons = new IconSource[]
+            {
+                new FontIconSource { Glyph = "\uf2db", FontFamily = FontAwesome }, // microchip
+                new FontIconSource { Glyph = "\uf538", FontFamily = FontAwesome }, // memory
+                new FontIconSource { Glyph = "\uf0a0", FontFamily = FontAwesome }, // hard-drive
+                new FontIconSource { Glyph = "\uf6ff", FontFamily = FontAwesome }, // network-wired
+                new FontIconSource { Glyph = "\uf2c9", FontFamily = FontAwesome }, // temperature-half
+                new FontIconSource { Glyph = "\uf0ae", FontFamily = FontAwesome }, // list-check
+            };
+            var children = activityMonitor.MenuItems;
+            for (var i = 0; i < children.Count && i < childIcons.Length; i++)
+            {
+                if (children[i] is NavigationViewItem child)
+                {
+                    child.IconSource = childIcons[i];
+                }
             }
         }
     }

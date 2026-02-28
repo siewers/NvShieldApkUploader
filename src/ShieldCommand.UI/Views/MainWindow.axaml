@@ -78,10 +78,18 @@
                                       IsEnabled="{Binding IsDeviceConnected}" />
                 <ui:NavigationViewItem Content="Apps" Tag="Apps"
                                       IsEnabled="{Binding IsDeviceConnected}" />
-                <ui:NavigationViewItem Content="Activity Monitor" Tag="ActivityMonitor"
-                                      IsEnabled="{Binding IsDeviceConnected}" />
-                <ui:NavigationViewItem Content="Processes" Tag="Processes"
-                                      IsEnabled="{Binding IsDeviceConnected}" />
+                <ui:NavigationViewItem Content="Activity Monitor" Tag="CPU"
+                                      IsEnabled="{Binding IsDeviceConnected}"
+                                      IsExpanded="True" SelectsOnInvoked="True">
+                    <ui:NavigationViewItem.MenuItems>
+                        <ui:NavigationViewItem Content="CPU" Tag="CPU" />
+                        <ui:NavigationViewItem Content="Memory" Tag="Memory" />
+                        <ui:NavigationViewItem Content="Disk I/O" Tag="Disk" />
+                        <ui:NavigationViewItem Content="Network" Tag="Network" />
+                        <ui:NavigationViewItem Content="Thermals" Tag="Thermals" />
+                        <ui:NavigationViewItem Content="Processes" Tag="Processes" />
+                    </ui:NavigationViewItem.MenuItems>
+                </ui:NavigationViewItem>
             </ui:NavigationView.MenuItems>
         </ui:NavigationView>
     </Grid>

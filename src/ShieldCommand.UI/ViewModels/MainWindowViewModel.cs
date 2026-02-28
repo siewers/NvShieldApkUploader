@@ -92,7 +92,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         {
             "Apps" => AppsPage,
             "SystemInfo" => SystemPage,
-            "ActivityMonitor" => ActivityMonitorPage,
+            "CPU" or "Memory" or "Disk" or "Network" or "Thermals" => SetActivityMetric(tag),
             "Processes" => ProcessesPage,
             _ => SystemPage,
         };
@@ -111,5 +111,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         {
             ProcessesPage.Stop();
         }
+    }
+
+    private ActivityMonitorViewModel SetActivityMetric(string metric)
+    {
+        ActivityMonitorPage.SelectedMetric = metric;
+        return ActivityMonitorPage;
     }
 }

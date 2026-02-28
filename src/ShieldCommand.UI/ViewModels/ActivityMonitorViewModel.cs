@@ -44,6 +44,7 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
 
     [ObservableProperty] private string _statusText = string.Empty;
     [ObservableProperty] private bool _isMonitoring;
+    [ObservableProperty] private string _selectedMetric = "CPU";
 
     // Refresh interval
     [ObservableProperty] private RefreshRate _selectedRefreshRate = RefreshRate.Default;
