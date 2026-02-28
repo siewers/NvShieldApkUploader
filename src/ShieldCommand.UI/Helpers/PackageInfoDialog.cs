@@ -21,7 +21,8 @@ internal static class PackageInfoDialog
     public static async Task<bool> ShowAsync(
         ProcessDetails process,
         InstalledPackage? package,
-        string? primaryButtonText = null)
+        string? primaryButtonText = null,
+        string? confirmMessage = null)
     {
         var rows = new List<(string Label, string? Value)>
         {
@@ -40,7 +41,7 @@ internal static class PackageInfoDialog
             rows.AddRange(BuildPackageRows(package));
         }
 
-        return await ShowCoreAsync(process.Name, rows, primaryButtonText);
+        return await ShowCoreAsync(process.Name, rows, primaryButtonText, confirmMessage);
     }
 
     private static List<(string Label, string? Value)> BuildPackageRows(InstalledPackage package)
@@ -84,7 +85,8 @@ internal static class PackageInfoDialog
     private static async Task<bool> ShowCoreAsync(
         string title,
         List<(string Label, string? Value)> rows,
-        string? primaryButtonText)
+        string? primaryButtonText,
+        string? confirmMessage = null)
     {
         var grid = new Grid
         {
@@ -129,6 +131,8 @@ internal static class PackageInfoDialog
             grid.Children.Add(value);
         }
 
+        var confirmed = false;
+
         var dialog = new ContentDialog
         {
             Title = title,
@@ -138,7 +142,27 @@ internal static class PackageInfoDialog
             DefaultButton = ContentDialogButton.Close,
         };
 
+        if (confirmMessage is not null)
+        {
+            dialog.PrimaryButtonClick += async (_, args) =>
+            {
+                var deferral = args.GetDeferral();
+                var confirm = new ContentDialog
+                {
+                    Title = primaryButtonText,
+                    Content = confirmMessage,
+                    PrimaryButtonText = primaryButtonText,
+                    CloseButtonText = "Cancel",
+                    DefaultButton = ContentDialogButton.Close,
+                };
+
+                confirmed = await confirm.ShowAsync() == ContentDialogResult.Primary;
+                args.Cancel = !confirmed;
+                deferral.Complete();
+            };
+        }
+
         var result = await dialog.ShowAsync();
-        return result == ContentDialogResult.Primary;
+        return confirmMessage is not null ? confirmed : result == ContentDialogResult.Primary;
     }
 }

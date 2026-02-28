@@ -133,11 +133,10 @@ public sealed partial class ProcessesView : UserControl
                 MenuHelper.CreateItem("Info", "\uf05a", () => _ = ShowProcessInfoAsync(vm, proc)),
                 MenuHelper.CreateGoogleSearchItem(searchName),
                 new Separator(),
-                new MenuItem
-                {
-                    Header = $"Kill \"{proc.Name}\" (PID {proc.Pid})",
-                    Command = vm.KillProcessCommand,
-                }
+                MenuHelper.CreateItem(
+                    $"Terminate \"{proc.Name}\" (PID {proc.Pid})",
+                    "\uf00d",
+                    () => vm.KillProcessCommand.Execute(null))
             }
         };
 
@@ -156,7 +155,11 @@ public sealed partial class ProcessesView : UserControl
             ? await vm.AdbService.GetPackageInfoAsync(proc.PackageName, includeSize: true)
             : null;
 
-        if (await PackageInfoDialog.ShowAsync(details, package, proc.IsUserApp ? "Kill" : null))
+        if (await PackageInfoDialog.ShowAsync(
+                details,
+                package,
+                proc.IsUserApp ? "Terminate" : null,
+                proc.IsUserApp ? $"Are you sure you want to terminate \"{proc.Name}\" (PID {proc.Pid})?" : null))
         {
             await vm.KillProcessCommand.ExecuteAsync(null);
         }
