@@ -31,6 +31,12 @@ public sealed partial class SystemViewModel : ViewModelBase
         await LoadAsync();
     }
 
+    public void Clear()
+    {
+        Model = Manufacturer = Architecture = AndroidVersion = ApiLevel = BuildId = TotalRam = StorageTotal = null;
+        StatusText = string.Empty;
+    }
+
     [RelayCommand]
     private async Task LoadAsync()
     {

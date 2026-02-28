@@ -512,6 +512,64 @@ public sealed partial class ActivityMonitorViewModel : ViewModelBase
         StopMonitoring();
     }
 
+    public void Clear()
+    {
+        // CPU — core series are device-specific so remove them entirely
+        _prevCpuActive = _prevCpuTotal = _prevCpuUser = _prevCpuSystem = _prevCpuIdle = 0;
+        foreach (var (_, state) in _coreState)
+            state.Points.Clear();
+        _coreState.Clear();
+        CpuSeries.Clear();
+        CpuLegend.Clear();
+        _miniUserPoints.Clear();
+        _miniSystemPoints.Clear();
+
+        // Memory — keep series (static structure), clear data
+        _memPoints.Clear();
+        _memMaxSet = false;
+        MemSections.Clear();
+        _miniMemUsedPoints.Clear();
+        _miniMemCachedPoints.Clear();
+        _miniMemFreePoints.Clear();
+
+        // Thermals — zone series are device-specific so remove them entirely
+        foreach (var (_, state) in _zoneState)
+            state.Points.Clear();
+        _zoneState.Clear();
+        _thermalSeries.Clear();
+        ThermalLegend.Clear();
+        _miniThermalAvgPoints.Clear();
+        _miniThermalMaxPoints.Clear();
+
+        // Disk — keep series (static structure), clear data
+        _prevDiskKbRead = _prevDiskKbWritten = 0;
+        _prevDiskTime = default;
+        _diskReadPoints.Clear();
+        _diskWritePoints.Clear();
+        _miniDiskReadPoints.Clear();
+        _miniDiskWritePoints.Clear();
+
+        // Network — keep series (static structure), clear data
+        _prevNetBytesIn = _prevNetBytesOut = 0;
+        _prevNetPacketsIn = _prevNetPacketsOut = 0;
+        _prevNetTime = default;
+        _netInPoints.Clear();
+        _netOutPoints.Clear();
+        _miniNetInPoints.Clear();
+        _miniNetOutPoints.Clear();
+
+        // Text properties
+        CpuUsageText = CpuUserText = CpuSystemText = CpuIdleText = "—";
+        MemUsageText = "—";
+        Temperature = null;
+        AvgTemperatureText = MinTemperatureText = MaxTemperatureText = HottestZoneText = ZoneCountText = FanStateText = "—";
+        ProcessCount = ThreadCount = 0;
+        DiskReadSpeedText = DiskWriteSpeedText = DiskDataReadText = DiskDataWrittenText = DiskLatencyText = DiskRecentWriteSpeedText = "—";
+        NetInSpeedText = NetOutSpeedText = NetPacketsInText = NetPacketsOutText = NetDataInText = NetDataOutText = "—";
+        NetPacketsInPerSecText = NetPacketsOutPerSecText = "—";
+        StatusText = string.Empty;
+    }
+
     private async Task PollAsync()
     {
         var info = await _adbService.GetDeviceInfoAsync(dynamicOnly: true);

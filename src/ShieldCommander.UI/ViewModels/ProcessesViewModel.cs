@@ -109,6 +109,16 @@ public sealed partial class ProcessesViewModel : ViewModelBase
         StatusText = "Monitoring stopped";
     }
 
+    public void Clear()
+    {
+        Processes.Clear();
+        _prevProcs.Clear();
+        _prevTotalJiffies = _prevIdleJiffies = 0;
+        SelectedProcess = null;
+        LoadText = "";
+        StatusText = string.Empty;
+    }
+
     private void StartMonitoringLoop()
     {
         var timer = _timer;

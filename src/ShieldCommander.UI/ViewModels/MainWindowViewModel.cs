@@ -76,6 +76,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
                 _adbService.CloseSession();
                 ActivityMonitorPage.Stop();
                 ProcessesPage.Stop();
+                ActivityMonitorPage.Clear();
+                ProcessesPage.Clear();
+                AppsPage.Clear();
+                SystemPage.Clear();
             }
         };
     }

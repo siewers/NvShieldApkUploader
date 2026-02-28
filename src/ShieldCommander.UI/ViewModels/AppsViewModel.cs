@@ -53,6 +53,13 @@ public sealed partial class AppsViewModel : ViewModelBase
         AdbService = adbService;
     }
 
+    public void Clear()
+    {
+        Packages.Clear();
+        SelectedPackage = null;
+        StatusText = string.Empty;
+    }
+
     [RelayCommand]
     private async Task RefreshAsync()
     {
