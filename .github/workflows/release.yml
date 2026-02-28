@@ -1,0 +1,129 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            rid: osx-arm64
+            artifact: ShieldCommand-macos-arm64.zip
+          - os: macos-latest
+            rid: osx-x64
+            artifact: ShieldCommand-macos-x64.zip
+          - os: windows-latest
+            rid: win-x64
+            artifact: ShieldCommand-windows-x64.zip
+          - os: ubuntu-latest
+            rid: linux-x64
+            artifact: ShieldCommand-linux-x64.tar.gz
+          - os: ubuntu-latest
+            rid: linux-arm64
+            artifact: ShieldCommand-linux-arm64.tar.gz
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+          dotnet-quality: preview
+
+      - name: Publish
+        run: >
+          dotnet publish src/ShieldCommand.UI/ShieldCommand.UI.csproj
+          -c Release
+          -r ${{ matrix.rid }}
+          --self-contained true
+          -o publish/bin
+
+      - name: Package macOS app bundle
+        if: startsWith(matrix.rid, 'osx')
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          APP="publish/Shield Command.app"
+
+          mkdir -p "$APP/Contents/MacOS"
+          mkdir -p "$APP/Contents/Resources"
+
+          cp -R publish/bin/* "$APP/Contents/MacOS/"
+
+          cp src/ShieldCommand.UI/Assets/app-icon.icns \
+             "$APP/Contents/Resources/app-icon.icns"
+
+          cat > "$APP/Contents/Info.plist" << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>CFBundleName</key>
+              <string>Shield Command</string>
+              <key>CFBundleDisplayName</key>
+              <string>Shield Command</string>
+              <key>CFBundleIdentifier</key>
+              <string>com.shieldcommand.app</string>
+              <key>CFBundleVersion</key>
+              <string>${VERSION}</string>
+              <key>CFBundleShortVersionString</key>
+              <string>${VERSION}</string>
+              <key>CFBundleExecutable</key>
+              <string>ShieldCommand</string>
+              <key>CFBundleIconFile</key>
+              <string>app-icon</string>
+              <key>CFBundlePackageType</key>
+              <string>APPL</string>
+              <key>NSHighResolutionCapable</key>
+              <true/>
+              <key>LSMinimumSystemVersion</key>
+              <string>12.0</string>
+              <key>NSHumanReadableCopyright</key>
+              <string>Copyright © $(date +%Y) Siewers Software. All rights reserved.</string>
+          </dict>
+          </plist>
+          EOF
+
+          cd publish
+          zip -r -y "../${{ matrix.artifact }}" "Shield Command.app"
+
+      - name: Package Windows
+        if: matrix.rid == 'win-x64'
+        shell: pwsh
+        run: Compress-Archive -Path publish/bin/* -DestinationPath ${{ matrix.artifact }}
+
+      - name: Package Linux
+        if: startsWith(matrix.rid, 'linux')
+        run: tar -czf ${{ matrix.artifact }} -C publish/bin .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.artifact }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: artifacts/*
