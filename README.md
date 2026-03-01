@@ -48,6 +48,27 @@ Shield Commander auto-detects ADB from common install locations. If it can't fin
 - [ADB (Android Debug Bridge)](https://developer.android.com/tools/adb) installed
 - An NVIDIA Shield TV with **Developer Options** and **Network Debugging** enabled
 
+### Installing ADB
+
+Shield Commander requires ADB (Android Debug Bridge) to communicate with your Shield TV. Install it for your platform:
+
+**Windows** — Install via [winget](https://learn.microsoft.com/en-us/windows/package-manager/winget/):
+```
+winget install Google.PlatformTools
+```
+
+**macOS** — Install via [Homebrew](https://brew.sh/):
+```
+brew install android-platform-tools
+```
+
+**Linux (Debian/Ubuntu):**
+```
+sudo apt install android-tools-adb
+```
+
+You can also [download the SDK Platform Tools](https://developer.android.com/tools/releases/platform-tools#downloads) directly from Google and extract them anywhere. Shield Commander will auto-detect ADB from common install locations, or you can set the path manually in the app.
+
 ## Built With
 
 - [Avalonia UI](https://avaloniaui.net/) with [Fluent Avalonia](https://github.com/amwx/FluentAvalonia)
