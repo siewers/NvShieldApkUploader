@@ -62,6 +62,15 @@ public sealed partial class MainWindow : Window
 
     private void ApplyVisualTweaks()
     {
+        // Adjust title bar spacing per platform:
+        // macOS: traffic lights on the left → 78px left spacer, no right margin
+        // Windows: min/max/close on the right → no left spacer, right margin for buttons
+        if (!OperatingSystem.IsMacOS())
+        {
+            TitleBarLeftSpacer.Width = 0;
+            TitleBarStatusButton.Margin = new Thickness(0, 0, 140, 0);
+        }
+
         // Hide NavView until visual tweaks are applied to prevent layout shift
         NavView.Opacity = 0;
 

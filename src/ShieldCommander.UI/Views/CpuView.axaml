@@ -76,7 +76,6 @@
                                     YAxes="{Binding CpuYAxes}"
                                     ZoomMode="X"
                                     LegendPosition="Hidden"
-                                    Background="Transparent"
                                     />
                 <ItemsControl Grid.Column="1" ItemsSource="{Binding CpuLegend}"
                               VerticalAlignment="Top" Margin="12,8,0,0">

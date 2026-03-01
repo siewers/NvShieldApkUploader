@@ -514,6 +514,8 @@ public sealed class AdbService
 
         // Prefer persistent shell session for polling commands
         var shellOutput = await RunShellWithFallbackAsync(combinedCmd, prefix);
+        // Normalize \r\n to \n — ADB on Windows returns Windows-style line endings
+        shellOutput = shellOutput.Replace("\r\n", "\n");
         var sections = shellOutput.Split($"\n{sep}\n", StringSplitOptions.None);
 
         // Helper to safely get a section

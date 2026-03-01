@@ -87,7 +87,6 @@
                                     YAxes="{Binding NetYAxes}"
                                     ZoomMode="X"
                                     LegendPosition="Hidden"
-                                    Background="Transparent"
                                     />
                 <ItemsControl Grid.Column="1" ItemsSource="{Binding NetLegend}"
                               VerticalAlignment="Top" Margin="12,8,0,0">

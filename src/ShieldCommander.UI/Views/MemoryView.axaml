@@ -78,7 +78,6 @@
                                 YAxes="{Binding MemYAxes}"
                                 Sections="{Binding MemSections}"
                                 ZoomMode="X"
-                                Background="Transparent"
                                 />
         </Border>
     </DockPanel>

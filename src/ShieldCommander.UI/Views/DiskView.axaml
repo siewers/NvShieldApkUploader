@@ -87,7 +87,6 @@
                                     YAxes="{Binding DiskYAxes}"
                                     ZoomMode="X"
                                     LegendPosition="Hidden"
-                                    Background="Transparent"
                                     />
                 <ItemsControl Grid.Column="1" ItemsSource="{Binding DiskLegend}"
                               VerticalAlignment="Top" Margin="12,8,0,0">

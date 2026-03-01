@@ -37,7 +37,8 @@
     <Grid RowDefinitions="38,*">
         <!-- Title bar overlay -->
         <Grid Grid.Row="0" ColumnDefinitions="78,*,Auto">
-            <!-- Col 0: spacer for macOS traffic lights -->
+            <!-- Col 0: spacer for macOS traffic lights (shrinks to 0 on Windows via code-behind) -->
+            <Border x:Name="TitleBarLeftSpacer" Grid.Column="0" Width="78"/>
             <!-- Col 1: drag region (transparent, not hit testable) -->
             <!-- Col 2: clickable status -->
             <Button Grid.Column="2"
@@ -53,7 +54,8 @@
                     <Ellipse x:Name="ConnectionIndicator"
                              Width="8" Height="8"
                              Fill="#FF4444"
-                             Margin="0,0,0,2"/>
+                             Margin="2"
+                             VerticalAlignment="Center"/>
                     <TextBlock Text="{Binding ConnectionStatusText}"
                                FontSize="12"/>
                 </StackPanel>

@@ -80,7 +80,6 @@
                                     YAxes="{Binding ThermalYAxes}"
                                     ZoomMode="X"
                                     LegendPosition="Hidden"
-                                    Background="Transparent"
                                     />
                 <ItemsControl Grid.Column="1" ItemsSource="{Binding ThermalLegend}"
                               VerticalAlignment="Top" Margin="12,8,0,0">
