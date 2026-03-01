@@ -69,7 +69,7 @@
                 <Button Grid.Column="1"
                         Content="Connect"
                         Command="{Binding ConnectCommand}"
-                        IsEnabled="{Binding !IsBusy}"
+                        IsEnabled="{Binding IsAdbAvailable}"
                         Classes="accent"/>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
                     <ui:ProgressRing Width="16" Height="16"
@@ -82,6 +82,13 @@
                 </StackPanel>
             </Grid>
         </StackPanel>
+
+        <!-- ADB not found warning -->
+        <Border Background="#44FF6B6B" CornerRadius="4" Padding="12"
+                IsVisible="{Binding !IsAdbAvailable}">
+            <TextBlock Text="ADB not found. Install Android SDK Platform Tools or specify the path below."
+                       Foreground="#FFCCCC"/>
+        </Border>
 
         <!-- ADB path (shown when disconnected) -->
         <StackPanel Spacing="4" IsVisible="{Binding !IsConnected}">
@@ -159,6 +166,7 @@
                                 <Button Content="Connect"
                                         Command="{Binding $parent[ItemsControl].((vm:DeviceViewModel)DataContext).ConnectToSavedCommand}"
                                         CommandParameter="{Binding}"
+                                        IsEnabled="{Binding $parent[ItemsControl].((vm:DeviceViewModel)DataContext).IsAdbAvailable}"
                                         Padding="8,4" />
                                 <Button Content="Remove"
                                         Command="{Binding $parent[ItemsControl].((vm:DeviceViewModel)DataContext).RemoveSavedDeviceCommand}"
@@ -170,6 +178,35 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
+        <!-- Help section -->
+        <Expander Header="Setup Help" Margin="0,8,0,0">
+            <StackPanel Spacing="12" Margin="4,8">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="1. Enable Developer Options" FontWeight="SemiBold"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="Gray"
+                               Text="On your Shield TV, go to Settings > Device Preferences > About and tap 'Build' 7 times to unlock Developer Options."/>
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="2. Enable Network Debugging" FontWeight="SemiBold"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="Gray"
+                               Text="Go to Settings > Developer Options and enable 'Network debugging'. Your device's IP address and port will be shown on screen."/>
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="3. Connect" FontWeight="SemiBold"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="Gray"
+                               Text="Enter the IP address shown on your TV and click Connect. A prompt will appear on your TV asking you to allow the connection — select 'Always allow from this computer' and tap OK."/>
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Troubleshooting" FontWeight="SemiBold"/>
+                    <TextBlock TextWrapping="Wrap" Foreground="Gray"
+                               Text="If the authorization prompt doesn't appear on your TV, go to Settings > Developer Options > Revoke USB debugging authorizations, then toggle Network debugging off and on, and retry the connection."/>
+                </StackPanel>
+            </StackPanel>
+        </Expander>
+
     </StackPanel>
     </ScrollViewer>
 </UserControl>

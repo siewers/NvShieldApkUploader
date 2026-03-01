@@ -17,16 +17,33 @@ public sealed class AdbService
 
     public string ResolvedPath => _adbPath;
 
+    private bool? _isAdbAvailable;
+
+    public bool IsAdbAvailable => _isAdbAvailable ??= CheckAdbAvailable();
+
     public void SetAdbPath(string? path)
     {
         _adbPath = string.IsNullOrWhiteSpace(path) ? FindAdb() : path;
+        _isAdbAvailable = null; // Reset cache
+    }
+
+    private bool CheckAdbAvailable()
+    {
+        return File.Exists(_adbPath) || CanRunAdb(_adbPath);
     }
 
     public static string FindAdb()
     {
+        var exe = OperatingSystem.IsWindows() ? "adb.exe" : "adb";
+
+        // Use shell to discover ADB in PATH
+        var discovered = DiscoverAdbPath();
+        if (!string.IsNullOrEmpty(discovered))
+            return discovered;
+
+        // Fallback to common locations
         var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var exe = OperatingSystem.IsWindows() ? "adb.exe" : "adb";
 
         var candidates = new List<string>();
 
@@ -52,6 +69,87 @@ public sealed class AdbService
         }
 
         return exe;
+    }
+
+    private static string? DiscoverAdbPath()
+    {
+        // First try running adb directly (handles App Execution Aliases on Windows)
+        var exe = OperatingSystem.IsWindows() ? "adb.exe" : "adb";
+        if (CanRunAdb(exe))
+        {
+            // Resolve to full path so the UI can display it
+            var resolved = ResolveFullPath(exe);
+            return resolved ?? exe;
+        }
+
+        return null;
+    }
+
+    private static string? ResolveFullPath(string exe)
+    {
+        try
+        {
+            using var process = new Process();
+            if (OperatingSystem.IsWindows())
+            {
+                process.StartInfo = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = $"/c where {exe}",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                };
+            }
+            else
+            {
+                process.StartInfo = new ProcessStartInfo
+                {
+                    FileName = "/bin/sh",
+                    Arguments = $"-c \"which {exe}\"",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                };
+            }
+
+            process.Start();
+            var output = process.StandardOutput.ReadLine();
+            process.WaitForExit(2000);
+
+            if (process.ExitCode == 0 && !string.IsNullOrWhiteSpace(output) && File.Exists(output))
+                return output;
+        }
+        catch
+        {
+            // Ignore
+        }
+
+        return null;
+    }
+
+    private static bool CanRunAdb(string adbPath)
+    {
+        try
+        {
+            using var process = new Process();
+            process.StartInfo = new ProcessStartInfo
+            {
+                FileName = adbPath,
+                Arguments = "version",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            };
+            process.Start();
+            process.WaitForExit(2000);
+            return process.ExitCode == 0;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     public async Task OpenSessionAsync(string? deviceSerial = null)

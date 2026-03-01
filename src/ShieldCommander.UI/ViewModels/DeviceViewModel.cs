@@ -12,6 +12,7 @@ public sealed partial class DeviceViewModel : ViewModelBase
     private readonly DeviceDiscoveryService _discoveryService = new();
 
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(ConnectCommand))]
     private string _ipAddress = string.Empty;
 
     [ObservableProperty]
@@ -30,9 +31,12 @@ public sealed partial class DeviceViewModel : ViewModelBase
     private bool _isScanning;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsAdbAvailable))]
     private string _adbPath = string.Empty;
 
     public string AdbPathPlaceholder => AdbService.FindAdb();
+
+    public bool IsAdbAvailable => _adbService.IsAdbAvailable;
 
     public ObservableCollection<ShieldDevice> ConnectedDevices { get; } = [];
     public ObservableCollection<SavedDevice> SavedDevices { get; } = [];
@@ -41,7 +45,7 @@ public sealed partial class DeviceViewModel : ViewModelBase
     public DeviceViewModel(AdbService adbService)
     {
         _adbService = adbService;
-        _adbPath = AppSettingsAccessor.Settings.AdbPath ?? string.Empty;
+        _adbPath = AppSettingsAccessor.Settings.AdbPath ?? _adbService.ResolvedPath;
         LoadSavedDevices();
         RefreshSuggestions();
         _ = ScanForSuggestionsAsync();
@@ -63,39 +67,101 @@ public sealed partial class DeviceViewModel : ViewModelBase
         }
     }
 
-    [RelayCommand]
+    private bool CanConnect() => System.Net.IPAddress.TryParse(IpAddress, out _);
+
+    /// Raised when the UI should show the "waiting for authorization" dialog.
+    /// The func receives a CancellationToken (cancelled when the user clicks Cancel)
+    /// and should return only after the dialog is closed.
+    public Func<CancellationToken, Task>? ShowAuthorizationDialog { get; set; }
+
+    [RelayCommand(CanExecute = nameof(CanConnect))]
     private async Task ConnectAsync()
     {
-        if (string.IsNullOrWhiteSpace(IpAddress))
-        {
-            StatusText = "Please enter an IP address";
-            return;
-        }
-
         IsBusy = true;
         StatusText = $"Connecting to {IpAddress}...";
 
-        var result = await _adbService.ConnectAsync(IpAddress);
+        // Try initial connect — may fail if device is off, or succeed but be unauthorized
+        await _adbService.ConnectAsync(IpAddress);
 
-        if (result.Success)
+        // Check if already fully authorized
+        var devices = await _adbService.GetConnectedDevicesAsync();
+        if (devices.Any(d => d.IpAddress.StartsWith(IpAddress)))
         {
-            StatusText = $"Connected to {IpAddress}";
-            IsConnected = true;
-            await RefreshDevicesAsync();
+            await OnConnectedAsync(IpAddress);
+            IsBusy = false;
+            return;
+        }
 
-            var device = ConnectedDevices.FirstOrDefault(d => d.IpAddress.StartsWith(IpAddress));
-            ConnectedDeviceName = device?.DeviceName ?? "";
-            AppSettingsAccessor.Settings.AddOrUpdateDevice(IpAddress, device?.DeviceName);
-            LoadSavedDevices();
-            RefreshSuggestions();
+        // Not yet connected/authorized — show dialog and poll
+        if (ShowAuthorizationDialog == null)
+        {
+            StatusText = "Failed to connect";
+            IsBusy = false;
+            return;
+        }
+
+        using var cts = new CancellationTokenSource();
+        var dialogTask = ShowAuthorizationDialog(cts.Token);
+        var pollTask = PollForConnectionAsync(IpAddress, cts.Token);
+
+        var completed = await Task.WhenAny(dialogTask, pollTask);
+
+        if (completed == pollTask && await pollTask)
+        {
+            await cts.CancelAsync();
+            await OnConnectedAsync(IpAddress);
         }
         else
         {
-            StatusText = $"Failed: {(string.IsNullOrEmpty(result.Error) ? result.Output : result.Error)}";
+            await cts.CancelAsync();
+            StatusText = "Connection cancelled";
             IsConnected = false;
+            await _adbService.DisconnectAsync(IpAddress);
         }
 
         IsBusy = false;
+    }
+
+    private async Task OnConnectedAsync(string ipAddress)
+    {
+        StatusText = $"Connected to {ipAddress}";
+        IsConnected = true;
+        await RefreshDevicesAsync();
+
+        var device = ConnectedDevices.FirstOrDefault(d => d.IpAddress.StartsWith(ipAddress));
+        ConnectedDeviceName = device?.DeviceName ?? "";
+        AppSettingsAccessor.Settings.AddOrUpdateDevice(ipAddress, device?.DeviceName);
+        LoadSavedDevices();
+        RefreshSuggestions();
+    }
+
+    private async Task<bool> PollForConnectionAsync(string ipAddress, CancellationToken ct)
+    {
+        try
+        {
+            // Poll for up to 2 minutes (device may be off and need time to boot)
+            for (var i = 0; i < 60; i++)
+            {
+                await Task.Delay(2000, ct);
+
+                // Only retry adb connect every 10s (5 iterations) to handle the
+                // "device was off" case without spamming auth prompts on the TV
+                if (i > 0 && i % 5 == 0)
+                {
+                    await _adbService.ConnectAsync(ipAddress);
+                }
+
+                var devices = await _adbService.GetConnectedDevicesAsync();
+                if (devices.Any(d => d.IpAddress.StartsWith(ipAddress)))
+                    return true;
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // User cancelled
+        }
+
+        return false;
     }
 
     [RelayCommand]
